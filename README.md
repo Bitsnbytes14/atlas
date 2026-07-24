@@ -137,27 +137,7 @@ npm run build
 - User accounts
 - Saved trips
 
-## Screenshots
 
-### Landing Page
-
-![Landing Page Placeholder](./public/screenshots/landing-page-placeholder.png)
-
-### Website Renderer
-
-![Website Renderer Placeholder](./public/screenshots/website-renderer-placeholder.png)
-
-### Email Renderer
-
-![Email Renderer Placeholder](./public/screenshots/email-renderer-placeholder.png)
-
-### Travel Guide
-
-![Travel Guide Placeholder](./public/screenshots/travel-guide-placeholder.png)
-
-### Voice Concierge
-
-![Voice Concierge Placeholder](./public/screenshots/voice-concierge-placeholder.png)
 
 ## Author
 
