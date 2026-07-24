@@ -1,232 +1,333 @@
-import { useState } from 'react'
-import type { Trip } from '../types/trip'
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useTripContext } from '../context/useTripContext'
 
-const sampleTrip = {
-  id: 'trip-japan-family',
-  title: 'Japan Luxury Family Escape',
-  slug: 'japan-luxury-family-escape',
-  travelerId: 'traveler-1',
-  createdAt: '2026-07-22',
-  updatedAt: '2026-07-22',
-  status: 'generated',
-  destination: {
-    id: 'dest-japan',
-    name: 'Japan',
-    country: 'Japan',
-    region: 'Honshu',
-    latitude: 35.6764,
-    longitude: 139.6503,
-    timezone: 'Asia/Tokyo',
-    climateSummary: 'Gentle spring mornings with warm evenings.',
-    bestSeason: ['Spring', 'Autumn'],
-    description: 'A layered journey of temples, quiet luxury, and coastal light.',
-  },
-  traveler: {
-    id: 'traveler-1',
-    name: 'Mina',
-    email: 'mina@example.com',
-    preferences: {
-      travelStyle: ['luxury', 'family', 'slow'],
-      pace: 'relaxed',
-      budgetRange: 'luxury',
-      interests: ['culture', 'food', 'nature'],
-    },
-  },
-  overview: {
-    summary: 'An elegant seven-day escape paced for family time and thoughtful discovery.',
-    vibe: 'Soft luxury, calm pacing, warm hospitality',
-    durationDays: 7,
-    startDate: '2026-09-12',
-    endDate: '2026-09-19',
-  },
-  itinerary: [
-    {
-      id: 'day-1',
-      dayNumber: 1,
-      date: '2026-09-12',
-      title: 'Arrival',
-      summary: 'A gentle landing in Kyoto with garden views and a long welcome dinner.',
-      activities: [
-        { id: 'a-1', title: 'Private transfer', description: 'Arrive through a quiet garden gate and settle into a pavilion-style suite.', category: 'wellness', location: 'Kyoto', priority: 'must' },
-        { id: 'a-2', title: 'Tea ceremony', description: 'An intimate ceremony held in a heritage home before dusk.', category: 'culture', location: 'Gion', priority: 'must' },
-      ],
-    },
-    {
-      id: 'day-2',
-      dayNumber: 2,
-      date: '2026-09-13',
-      title: 'Kyoto',
-      summary: 'Temple mornings, quiet lanes, and a riverside supper under lantern light.',
-      activities: [
-        { id: 'a-3', title: 'Morning temple visit', description: 'An early start to experience the gardens before the crowds arrive.', category: 'culture', location: 'Kiyomizu-dera', priority: 'must' },
-        { id: 'a-4', title: 'Hidden cafés', description: 'A slow coffee stop tucked behind old wooden storefronts.', category: 'food', location: 'Higashiyama', priority: 'nice-to-have' },
-      ],
-    },
-    {
-      id: 'day-3',
-      dayNumber: 3,
-      date: '2026-09-14',
-      title: 'Hidden Cafés',
-      summary: 'An unhurried day shaped around neighborhood walks and exceptional meals.',
-      activities: [
-        { id: 'a-5', title: 'Market breakfast', description: 'Fresh pastries and seasonal fruit served in a sunlit courtyard.', category: 'food', location: 'Nishiki', priority: 'must' },
-        { id: 'a-6', title: 'Design shop browsing', description: 'A gentle afternoon discovering small ateliers and crafted objects.', category: 'shopping', location: 'Nakagyo', priority: 'nice-to-have' },
-      ],
-    },
-    {
-      id: 'day-4',
-      dayNumber: 4,
-      date: '2026-09-15',
-      title: 'Mount Fuji',
-      summary: 'A cinematic day framed by mountain views and a private lakeside dinner.',
-      activities: [
-        { id: 'a-7', title: 'Lake cruise', description: 'A calm boat crossing with views of the mountain reflected in the water.', category: 'nature', location: 'Lake Kawaguchi', priority: 'must' },
-      ],
-    },
-    {
-      id: 'day-5',
-      dayNumber: 5,
-      date: '2026-09-16',
-      title: 'Tokyo Nights',
-      summary: 'The city opens after dusk with rooftop light, jazz, and late-night bites.',
-      activities: [
-        { id: 'a-8', title: 'Rooftop dinner', description: 'A candlelit dinner above the city skyline with a private terrace.', category: 'nightlife', location: 'Shibuya', priority: 'must' },
-      ],
-    },
-  ],
-  hotel: {
-    id: 'hotel-1',
-    name: 'Garden Residence',
-    propertyType: 'boutique',
-    neighborhood: 'Kyoto',
-    checkIn: '15:00',
-    checkOut: '12:00',
-    rating: 4.9,
-    pricePerNight: 420000,
-    amenities: ['private garden', 'concierge', 'spa'],
-  },
-  restaurants: [
-    { id: 'rest-1', name: 'Hana No Mai', cuisine: 'Omakase', neighborhood: 'Gion', rating: 4.9, priceLevel: 'luxury', reservationRequired: true, notes: 'Best for a quiet celebratory dinner.' },
-    { id: 'rest-2', name: 'Kumo', cuisine: 'Modern Japanese', neighborhood: 'Shibuya', rating: 4.7, priceLevel: 'luxury', reservationRequired: true, notes: 'Warm lighting and a refined tasting menu.' },
-  ],
-  budget: {
-    id: 'budget-1',
-    currency: 'JPY',
-    totalBudget: 2400000,
-    estimatedSpend: 2200000,
-    categories: { lodging: 900000, food: 350000, activities: 400000, transportation: 250000, misc: 150000 },
-  },
-  weather: [
-    { id: 'weather-1', destinationId: 'dest-japan', date: '2026-09-12', summary: 'Clear and mild', temperatureHigh: 24, temperatureLow: 16, precipitationChance: 15, condition: 'mild' },
-  ],
-  packingList: [
-    { id: 'pack-1', name: 'Light wool layers', category: 'clothing', packed: true, required: true },
-    { id: 'pack-2', name: 'Passport', category: 'documents', packed: true, required: true },
-  ],
-  emergencyInfo: {
-    id: 'emergency-1',
-    contactName: 'Kyoto Concierge',
-    contactPhone: '+81 3 0000 0000',
-    localEmergencyNumber: '119',
-  },
-  transportation: [{ id: 'transport-1', mode: 'transfer', from: 'Kyoto Airport', to: 'Hotel', departureTime: '15:00', arrivalTime: '16:00', notes: 'Private car' }],
-  localTips: [{ id: 'tip-1', title: 'Reserve early', summary: 'The most beloved dining rooms fill quickly in spring.', category: 'food', priority: 'high' }],
-  metadata: {
-    generatedFromPrompt: 'Luxury family escape with slow pacing and cultural highlights',
-    source: 'ai',
-    tags: ['luxury', 'family', 'japan'],
-  },
-} satisfies Trip
+function getHourFromTime(value?: string) {
+  if (!value) {
+    return null
+  }
+
+  const match = value.match(/^(\d{1,2})/)
+  if (!match) {
+    return null
+  }
+
+  const hour = Number(match[1])
+  if (!Number.isFinite(hour) || hour < 0 || hour > 23) {
+    return null
+  }
+
+  return hour
+}
+
+function splitActivitiesByDayPart<T extends { startTime?: string }>(activities: T[]) {
+  const withTime = activities.filter((activity) => getHourFromTime(activity.startTime) !== null)
+
+  if (withTime.length > 0) {
+    return {
+      morning: withTime.filter((activity) => {
+        const hour = getHourFromTime(activity.startTime)
+        return hour !== null && hour < 12
+      }),
+      afternoon: withTime.filter((activity) => {
+        const hour = getHourFromTime(activity.startTime)
+        return hour !== null && hour >= 12 && hour < 18
+      }),
+      evening: withTime.filter((activity) => {
+        const hour = getHourFromTime(activity.startTime)
+        return hour !== null && hour >= 18
+      }),
+    }
+  }
+
+  const chunkSize = Math.max(1, Math.ceil(activities.length / 3))
+
+  return {
+    morning: activities.slice(0, chunkSize),
+    afternoon: activities.slice(chunkSize, chunkSize * 2),
+    evening: activities.slice(chunkSize * 2),
+  }
+}
 
 export default function DashboardPage() {
-  const [selectedChapterId, setSelectedChapterId] = useState(sampleTrip.itinerary[0].id)
+  const navigate = useNavigate()
+  const { currentTrip, error, loading } = useTripContext()
+  const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null)
 
-  const selectedChapter = sampleTrip.itinerary.find((chapter) => chapter.id === selectedChapterId) ?? sampleTrip.itinerary[0]
-  const chapterIndex = sampleTrip.itinerary.findIndex((chapter) => chapter.id === selectedChapter.id) + 1
+  const trip = currentTrip
+
+  const selectedChapter = useMemo(() => {
+    if (!trip?.itinerary.length) {
+      return null
+    }
+
+    const fallbackId = selectedChapterId ?? trip.itinerary[0].id
+    return trip.itinerary.find((chapter) => chapter.id === fallbackId) ?? trip.itinerary[0]
+  }, [selectedChapterId, trip])
+
+  const chapterIndex = trip?.itinerary.findIndex((chapter) => chapter.id === selectedChapter?.id) ?? -1
+
+  if (loading) {
+    return (
+      <div className="dashboard-page">
+        <section className="dashboard-cover-section">
+          <div className="dashboard-cover-card">
+            <div className="dashboard-cover-visual" aria-hidden="true" />
+            <div className="dashboard-cover-copy">
+              <p className="dashboard-kicker">atlas • travel book</p>
+              <h1>Assembling your journey.</h1>
+              <p className="dashboard-summary">Atlas is shaping your itinerary and preparing the first draft of your travel book.</p>
+              <button type="button" className="dashboard-cta" onClick={() => navigate('/')}>Return Home</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  if (!trip) {
+    return (
+      <div className="dashboard-page">
+        <section className="dashboard-cover-section">
+          <div className="dashboard-cover-card">
+            <div className="dashboard-cover-visual" aria-hidden="true" />
+            <div className="dashboard-cover-copy">
+              <p className="dashboard-kicker">atlas • travel book</p>
+              <h1>No journey has been created yet.</h1>
+              <p className="dashboard-summary">Create a first journey from the landing page to start shaping your Atlas experience.</p>
+              <button type="button" className="dashboard-cta" onClick={() => navigate('/')}>Create Journey</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="dashboard-page">
+        <section className="dashboard-cover-section">
+          <div className="dashboard-cover-card">
+            <div className="dashboard-cover-visual" aria-hidden="true" />
+            <div className="dashboard-cover-copy">
+              <p className="dashboard-kicker">atlas • travel book</p>
+              <h1>We could not assemble the journey.</h1>
+              <p className="dashboard-summary">{error}</p>
+              <button type="button" className="dashboard-cta" onClick={() => navigate('/')}>Try Again</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  const destinationImageUrl = `https://source.unsplash.com/1800x1100/?${encodeURIComponent(`${trip.destination.name} ${trip.destination.country} travel landscape`)}`
+  const weatherForDay = trip.weather.find((entry) => entry.date === selectedChapter?.date) ?? trip.weather[0]
+  const dayActivities = selectedChapter?.activities ?? []
+  const dayMoments = splitActivitiesByDayPart(dayActivities)
+  const dayTransportation = trip.transportation.slice(0, 4)
+  const chapterRestaurants = trip.restaurants.slice(0, 3)
+  const travelStyle = trip.traveler.preferences.travelStyle.length > 0
+    ? trip.traveler.preferences.travelStyle.join(' • ')
+    : trip.overview.vibe
+  const bestSeason = trip.destination.bestSeason.length > 0
+    ? trip.destination.bestSeason.join(' • ')
+    : 'Year-round'
 
   return (
     <div className="dashboard-page">
-      <section className="dashboard-cover-section">
-        <div className="dashboard-cover-card">
-          <div className="dashboard-cover-visual" aria-hidden="true" />
-          <div className="dashboard-cover-copy">
-            <p className="dashboard-kicker">atlas • travel book</p>
-            <h1>{sampleTrip.destination.name}</h1>
-            <h2>{sampleTrip.overview.durationDays}-Day {sampleTrip.overview.vibe}</h2>
-            <p className="dashboard-summary">{sampleTrip.overview.summary}</p>
-            <div className="dashboard-meta-row">
-              <span>Generated 8 seconds ago</span>
-              <span>{sampleTrip.hotel.name}</span>
-            </div>
+      <section className="dashboard-hero">
+        <div className="dashboard-hero-image-wrap">
+          <img className="dashboard-hero-image" src={destinationImageUrl} alt={`${trip.destination.name} travel mood`} />
+          <div className="dashboard-hero-gradient" />
+        </div>
+        <div className="dashboard-hero-copy">
+          <p className="dashboard-kicker">atlas • editorial travel guide</p>
+          <h1>{trip.destination.name}</h1>
+          <p className="dashboard-summary">{trip.overview.summary}</p>
+          <div className="dashboard-facts-grid">
+            <article className="dashboard-fact">
+              <span>Duration</span>
+              <strong>{trip.overview.durationDays} days</strong>
+            </article>
+            <article className="dashboard-fact">
+              <span>Budget</span>
+              <strong>{trip.budget.currency} {trip.budget.totalBudget.toLocaleString()}</strong>
+            </article>
+            <article className="dashboard-fact">
+              <span>Weather</span>
+              <strong>{weatherForDay?.summary ?? 'Seasonal conditions expected'}</strong>
+            </article>
+            <article className="dashboard-fact">
+              <span>Travel Style</span>
+              <strong>{travelStyle}</strong>
+            </article>
+            <article className="dashboard-fact">
+              <span>Best Season</span>
+              <strong>{bestSeason}</strong>
+            </article>
           </div>
+          <button type="button" className="dashboard-cta">Continue Reading</button>
         </div>
       </section>
 
-      <section className="dashboard-reader-section">
-        <aside className="dashboard-chapter-nav">
-          <p className="dashboard-label">Contents</p>
-          <div className="chapter-list">
-            {sampleTrip.itinerary.map((chapter, index) => (
+      <section className="dashboard-layout">
+        <aside className="dashboard-timeline" aria-label="Journey timeline">
+          <p className="dashboard-label">Journey Timeline</p>
+          <div className="timeline-list">
+            {trip.itinerary.map((chapter, index) => (
               <button
                 key={chapter.id}
                 type="button"
-                className={`chapter-item ${selectedChapter.id === chapter.id ? 'is-active' : ''}`}
+                className={`timeline-item ${selectedChapter?.id === chapter.id ? 'is-active' : ''}`}
                 onClick={() => setSelectedChapterId(chapter.id)}
               >
-                <span className="chapter-number">0{index + 1}</span>
-                <span className="chapter-title">{chapter.title}</span>
+                <div className="timeline-marker" aria-hidden="true">
+                  <span className="timeline-dot" />
+                  {index < trip.itinerary.length - 1 ? <span className="timeline-line" /> : null}
+                </div>
+                <div className="timeline-copy">
+                  <span className="timeline-day">Day {chapter.dayNumber}</span>
+                  <span className="timeline-title">{chapter.title}</span>
+                  <span className="timeline-date">{chapter.date}</span>
+                </div>
               </button>
             ))}
           </div>
         </aside>
 
-        <article className="dashboard-chapter-panel">
-          <div className="chapter-intro">
-            <p className="dashboard-label">Chapter {chapterIndex}</p>
-            <h3>{selectedChapter.title}</h3>
-            <p>{selectedChapter.summary}</p>
-          </div>
+        <article className="dashboard-reader">
+          <header className="reader-intro">
+            <p className="dashboard-label">Chapter {Math.max(1, chapterIndex + 1)}</p>
+            <h3>{selectedChapter?.title}</h3>
+            <p>{selectedChapter?.summary}</p>
+          </header>
 
-          <div className="chapter-grid">
-            <div className="chapter-card">
-              <h4>Timeline</h4>
+          <div className="reader-grid">
+            <section className="reader-card reader-card-morning">
+              <h4>Morning</h4>
               <ul>
-                {selectedChapter.activities.map((activity) => (
+                {dayMoments.morning.map((activity) => (
                   <li key={activity.id}>{activity.title}</li>
                 ))}
               </ul>
-            </div>
-            <div className="chapter-card">
-              <h4>Activities</h4>
-              <p>{selectedChapter.activities[0]?.description ?? 'A calm day shaped around thoughtful moments.'}</p>
-            </div>
-            <div className="chapter-card">
-              <h4>Restaurants</h4>
-              <p>{sampleTrip.restaurants[0]?.name} · {sampleTrip.restaurants[0]?.cuisine}</p>
-              <p>{sampleTrip.restaurants[1]?.name} · {sampleTrip.restaurants[1]?.cuisine}</p>
-            </div>
-            <div className="chapter-card">
-              <h4>Budget</h4>
-              <p>{sampleTrip.budget.currency} {sampleTrip.budget.estimatedSpend.toLocaleString()} estimated</p>
-            </div>
-            <div className="chapter-card">
-              <h4>Weather</h4>
-              <p>{sampleTrip.weather[0]?.summary}</p>
-              <p>{sampleTrip.weather[0]?.temperatureHigh}°C / {sampleTrip.weather[0]?.temperatureLow}°C</p>
-            </div>
-            <div className="chapter-card">
-              <h4>Packing</h4>
+            </section>
+
+            <section className="reader-card reader-card-afternoon">
+              <h4>Afternoon</h4>
               <ul>
-                {sampleTrip.packingList.map((item) => (
-                  <li key={item.id}>{item.name}</li>
+                {dayMoments.afternoon.map((activity) => (
+                  <li key={activity.id}>{activity.title}</li>
                 ))}
               </ul>
-            </div>
-            <div className="chapter-card chapter-card-wide">
+            </section>
+
+            <section className="reader-card reader-card-evening">
+              <h4>Evening</h4>
+              <ul>
+                {dayMoments.evening.map((activity) => (
+                  <li key={activity.id}>{activity.title}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="reader-card reader-card-restaurants">
+              <h4>Restaurants</h4>
+              <ul>
+                {chapterRestaurants.map((restaurant) => (
+                  <li key={restaurant.id}>{restaurant.name} • {restaurant.cuisine}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="reader-card reader-card-activities">
+              <h4>Activities</h4>
+              <ul>
+                {dayActivities.map((activity) => (
+                  <li key={activity.id}>{activity.title} • {activity.location}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="reader-card reader-card-transport">
+              <h4>Transport</h4>
+              <ul>
+                {dayTransportation.map((leg) => (
+                  <li key={leg.id}>{leg.mode} • {leg.from} to {leg.to}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="reader-card reader-card-notes reader-card-wide">
               <h4>Notes</h4>
-              <p>{selectedChapter.summary} The pacing remains soft, the experience intimate, and every stop feels considered.</p>
-            </div>
+              <p>{selectedChapter?.summary}</p>
+              {dayActivities.filter((activity) => activity.notes).map((activity) => (
+                <p key={activity.id}>{activity.notes}</p>
+              ))}
+            </section>
           </div>
+        </article>
+      </section>
+
+      <section className="dashboard-reference-grid">
+        <article className="reference-card reference-card-hotel">
+          <p className="reference-label">Hotel</p>
+          <h4>{trip.hotel.name}</h4>
+          <p>{trip.hotel.propertyType} • {trip.hotel.neighborhood}</p>
+          <p>{trip.hotel.checkIn} to {trip.hotel.checkOut}</p>
+          <p>{trip.hotel.rating} stars • {trip.budget.currency} {trip.hotel.pricePerNight.toLocaleString()} per night</p>
+        </article>
+
+        <article className="reference-card reference-card-restaurants">
+          <p className="reference-label">Restaurants</p>
+          <h4>Curated dining list</h4>
+          <ul>
+            {trip.restaurants.slice(0, 5).map((restaurant) => (
+              <li key={restaurant.id}>{restaurant.name} • {restaurant.priceLevel}</li>
+            ))}
+          </ul>
+        </article>
+
+        <article className="reference-card reference-card-budget">
+          <p className="reference-label">Budget</p>
+          <h4>{trip.budget.currency} {trip.budget.estimatedSpend.toLocaleString()} estimated</h4>
+          <p>Total: {trip.budget.currency} {trip.budget.totalBudget.toLocaleString()}</p>
+          <p>Lodging {trip.budget.categories.lodging.toLocaleString()} • Food {trip.budget.categories.food.toLocaleString()}</p>
+        </article>
+
+        <article className="reference-card reference-card-packing">
+          <p className="reference-label">Packing</p>
+          <h4>Essentials</h4>
+          <ul>
+            {trip.packingList.slice(0, 6).map((item) => (
+              <li key={item.id}>{item.name}{item.required ? ' • essential' : ''}</li>
+            ))}
+          </ul>
+        </article>
+
+        <article className="reference-card reference-card-weather">
+          <p className="reference-label">Weather</p>
+          <h4>{weatherForDay?.summary ?? 'Seasonal conditions expected'}</h4>
+          <p>{weatherForDay?.temperatureHigh ?? '-'}°C / {weatherForDay?.temperatureLow ?? '-'}°C</p>
+          <p>Precipitation chance: {weatherForDay?.precipitationChance ?? 0}%</p>
+        </article>
+
+        <article className="reference-card reference-card-tips">
+          <p className="reference-label">Local Tips</p>
+          <h4>Know before you go</h4>
+          <ul>
+            {trip.localTips.slice(0, 4).map((tip) => (
+              <li key={tip.id}>{tip.title} • {tip.summary}</li>
+            ))}
+          </ul>
+        </article>
+
+        <article className="reference-card reference-card-emergency">
+          <p className="reference-label">Emergency</p>
+          <h4>{trip.emergencyInfo.contactName || 'Primary contact'}</h4>
+          <p>{trip.emergencyInfo.contactPhone || 'Contact number unavailable'}</p>
+          <p>Local emergency: {trip.emergencyInfo.localEmergencyNumber || 'Unavailable'}</p>
+          {trip.emergencyInfo.medicalNote ? <p>{trip.emergencyInfo.medicalNote}</p> : null}
         </article>
       </section>
     </div>
