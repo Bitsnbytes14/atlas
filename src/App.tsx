@@ -1,314 +1,588 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { ConversationProvider, useConversation } from '@elevenlabs/react'
 import './App.css'
+import { getTripData } from './data'
+import TripPage from './renderers/page/TripPage'
+import TripEmail from './renderers/email/TripEmail'
+import TripDocument from './renderers/document/TripDocument'
+import type { Trip } from './types/trip'
+import { exportTripEmailHtml, exportTripGuidePdf, exportTripWebsiteHtml } from './utils/export'
 
-const journeySteps = [
-  '✈ Discovering hidden places...',
-  '🏨 Finding remarkable hotels...',
-  '🍜 Curating local restaurants...',
-  '🌅 Planning unforgettable sunsets...',
-  '📖 Writing your travel book...',
-  '🧳 Preparing your guide...',
-]
+const destinationOptions = ['Tokyo', 'Dubai', 'Istanbul'] as const
+const durationOptions = ['3 Days', '5 Days', '7 Days'] as const
+const travelStyleOptions = ['Luxury', 'Adventure', 'Culture', 'Romantic', 'Nature', 'Food', 'Family'] as const
+const budgetOptions = ['Budget', 'Mid-range', 'Luxury'] as const
+const travelerOptions = ['Solo', 'Couple', 'Friends', 'Family'] as const
+const renderModes = ['Website', 'Email', 'Travel Guide'] as const
+const loadingTips = [
+  'Scanning seasonal highlights and local pacing...',
+  'Balancing culture, food, and comfort moments...',
+  'Sequencing mornings, afternoons, and evenings...',
+  'Refining stays, dining, and transport details...',
+] as const
 
-const journeySummary = {
-  destination: 'Japan',
-  days: '7 Days',
-  budget: '₹2.4L',
-  style: 'Luxury Family Escape',
-  status: 'Travel Book Ready',
+const destinationVisuals: Record<string, { image: string; language: string }> = {
+  Tokyo: {
+    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1800&q=80',
+    language: 'Japanese',
+  },
+  Dubai: {
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1800&q=80',
+    language: 'Arabic',
+  },
+  Istanbul: {
+    image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=1800&q=80',
+    language: 'Turkish',
+  },
+}
+
+const conciergeAgentId = 'agent_7201ky9sns2jegxtrys4fxhz3kpd'
+
+function AtlasConciergeSection() {
+  const conversation = useConversation()
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [lastSignal, setLastSignal] = useState('Ready to assist with your journey.')
+
+  const isConnected = conversation.status === 'connected'
+
+  const handleStartConversation = async () => {
+    try {
+      setErrorMessage(null)
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      stream.getTracks().forEach((track) => track.stop())
+
+      conversation.startSession({
+        agentId: conciergeAgentId,
+        connectionType: 'webrtc',
+        onConnect: () => {
+          setLastSignal('Connected to Atlas Concierge.')
+        },
+        onDisconnect: () => {
+          setLastSignal('Session ended. You can start a new conversation anytime.')
+        },
+        onMessage: () => {
+          setLastSignal('Atlas exchanged a message in this conversation.')
+        },
+        onError: (error) => {
+          const message = typeof error === 'string'
+            ? error
+            : 'An unexpected voice connection issue occurred.'
+          setErrorMessage(message)
+        },
+        onModeChange: (mode) => {
+          setLastSignal(mode.mode === 'speaking' ? 'Atlas is speaking.' : 'Atlas is listening.')
+        },
+      })
+    } catch {
+      setErrorMessage('Microphone access is required to start the voice assistant.')
+    }
+  }
+
+  const handleEndConversation = () => {
+    conversation.endSession()
+  }
+
+  return (
+    <section className="atlas-concierge-card" aria-label="Atlas voice concierge">
+      <div className={`atlas-concierge-mic-wrap${isConnected ? ' is-connected' : ''}${conversation.isListening ? ' is-listening' : ''}${conversation.isSpeaking ? ' is-speaking' : ''}`}>
+        <div className="atlas-concierge-ring" aria-hidden="true" />
+        <div className="atlas-concierge-icon" aria-hidden="true">🎙</div>
+        <div className="atlas-concierge-bars" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
+
+      <div className="atlas-concierge-content">
+        <p className="atlas-onepage-kicker">Atlas AI Concierge</p>
+        <h2>Talk to Atlas AI Concierge</h2>
+        <p>
+          Need help choosing a destination? Speak naturally and ask about itineraries, travel styles, budgets, and Atlas features.
+        </p>
+
+        <div className="atlas-concierge-status-grid" aria-live="polite">
+          <p><strong>Status:</strong> {conversation.status}</p>
+          <p><strong>Listening:</strong> {conversation.isListening ? 'Yes' : 'No'}</p>
+          <p><strong>Speaking:</strong> {conversation.isSpeaking ? 'Yes' : 'No'}</p>
+        </div>
+
+        <p className="atlas-concierge-signal">{errorMessage ?? lastSignal}</p>
+
+        <ul className="atlas-concierge-features">
+          <li>Destination and season guidance</li>
+          <li>Itinerary and pacing recommendations</li>
+          <li>Budget and style alignment tips</li>
+        </ul>
+      </div>
+
+      <div className="atlas-concierge-actions">
+        <button
+          type="button"
+          className="atlas-concierge-button"
+          onClick={handleStartConversation}
+          disabled={isConnected || conversation.status === 'connecting'}
+        >
+          Start Conversation
+        </button>
+        <button
+          type="button"
+          className="atlas-concierge-button atlas-concierge-button--ghost"
+          onClick={handleEndConversation}
+          disabled={!isConnected && conversation.status !== 'connecting'}
+        >
+          End Conversation
+        </button>
+      </div>
+    </section>
+  )
 }
 
 export default function App() {
-  const navigate = useNavigate()
-  const [transitionState, setTransitionState] = useState<'idle' | 'loading' | 'complete'>('idle')
-  const [activeStep, setActiveStep] = useState(0)
+  const [destination, setDestination] = useState<(typeof destinationOptions)[number]>('Tokyo')
+  const [duration, setDuration] = useState<(typeof durationOptions)[number]>('7 Days')
+  const [travelStyle, setTravelStyle] = useState<(typeof travelStyleOptions)[number]>('Luxury')
+  const [budget, setBudget] = useState<(typeof budgetOptions)[number]>('Mid-range')
+  const [travelers, setTravelers] = useState<(typeof travelerOptions)[number]>('Couple')
+  const [activeRenderMode, setActiveRenderMode] = useState<(typeof renderModes)[number]>('Website')
+  const [generatedTrip, setGeneratedTrip] = useState<Trip | null>(null)
+  const [hasDataset, setHasDataset] = useState(false)
+  const [isDesigning, setIsDesigning] = useState(false)
+  const [showResult, setShowResult] = useState(false)
+  const [loadingTipIndex, setLoadingTipIndex] = useState(0)
+  const [generatedAt, setGeneratedAt] = useState<Date | null>(null)
+  const resultSectionRef = useRef<HTMLElement | null>(null)
 
-  const beginJourney = () => {
-    setActiveStep(0)
-    setTransitionState('loading')
+  useEffect(() => {
+    if (!isDesigning) {
+      return
+    }
+
+    const timeout = window.setTimeout(() => {
+      setIsDesigning(false)
+      setShowResult(true)
+    }, 1500)
+
+    return () => {
+      window.clearTimeout(timeout)
+    }
+  }, [isDesigning])
+
+  useEffect(() => {
+    if (!isDesigning) {
+      setLoadingTipIndex(0)
+      return
+    }
+
+    const interval = window.setInterval(() => {
+      setLoadingTipIndex((current) => (current + 1) % loadingTips.length)
+    }, 1150)
+
+    return () => {
+      window.clearInterval(interval)
+    }
+  }, [isDesigning])
+
+  useEffect(() => {
+    if (!showResult) return
+    resultSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [showResult])
+
+  const handleDesignJourney = () => {
+    const trip = getTripData(destination, duration)
+    setShowResult(false)
+    setActiveRenderMode('Website')
+    setGeneratedTrip(trip)
+    setGeneratedAt(new Date())
+    setHasDataset(Boolean(trip))
+    setIsDesigning(true)
+    // Local trip JSON injection point for the challenge data set.
   }
 
-  useEffect(() => {
-    if (transitionState !== 'loading') {
-      return
+  const activeRenderer = () => {
+    if (!generatedTrip) {
+      return null
     }
 
-    if (activeStep >= journeySteps.length - 1) {
-      setTransitionState('complete')
-      return
+    if (activeRenderMode === 'Email') {
+      return <TripEmail trip={generatedTrip} />
     }
 
-    const timeout = window.setTimeout(() => {
-      setActiveStep((current) => current + 1)
-    }, 900)
-
-    return () => {
-      window.clearTimeout(timeout)
-    }
-  }, [activeStep, transitionState])
-
-  useEffect(() => {
-    if (transitionState !== 'complete') {
-      return
+    if (activeRenderMode === 'Travel Guide') {
+      return <TripDocument trip={generatedTrip} />
     }
 
-    const timeout = window.setTimeout(() => {
-      navigate('/dashboard')
-    }, 1400)
+    return <TripPage trip={generatedTrip} />
+  }
 
-    return () => {
-      window.clearTimeout(timeout)
-    }
-  }, [navigate, transitionState])
+  const bestSeason = generatedTrip?.destination.bestSeason.slice(0, 3).join(' • ') ?? 'TBD'
+  const destinationVisual = generatedTrip ? destinationVisuals[generatedTrip.destination.name] : null
+  const generationTimestamp = generatedAt
+    ? generatedAt.toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    })
+    : 'Pending generation'
+  const weatherNow = generatedTrip?.weather[0] ?? null
+  const perDayEstimate = generatedTrip
+    ? Math.round(generatedTrip.budget.estimatedSpend / Math.max(generatedTrip.overview.durationDays, 1))
+    : 0
+
+  const summaryCards = generatedTrip
+    ? [
+      {
+        icon: '🗓',
+        title: 'Duration',
+        value: `${generatedTrip.overview.durationDays} days`,
+        description: 'Balanced across morning, afternoon, and evening pacing.',
+      },
+      {
+        icon: '💳',
+        title: 'Budget',
+        value: `${generatedTrip.budget.currency} ${generatedTrip.budget.totalBudget.toLocaleString()}`,
+        description: `Estimated spend ${generatedTrip.budget.currency} ${generatedTrip.budget.estimatedSpend.toLocaleString()}.`,
+      },
+      {
+        icon: '🧭',
+        title: 'Travel Style',
+        value: travelStyle,
+        description: 'Curated to match your selected journey mood and cadence.',
+      },
+      {
+        icon: '☀️',
+        title: 'Best Season',
+        value: bestSeason,
+        description: 'Top seasonal windows for weather and city atmosphere.',
+      },
+      {
+        icon: '💱',
+        title: 'Currency',
+        value: generatedTrip.budget.currency,
+        description: 'Primary planning currency used across this itinerary.',
+      },
+      {
+        icon: '🗣',
+        title: 'Language',
+        value: destinationVisual?.language ?? 'Local language',
+        description: 'Helpful for signs, restaurants, and local interactions.',
+      },
+      {
+        icon: '🌤',
+        title: 'Weather',
+        value: weatherNow
+          ? `${weatherNow.temperatureHigh}° / ${weatherNow.temperatureLow}°`
+          : 'Weather unavailable',
+        description: weatherNow?.summary ?? 'Forecast updates will appear when available.',
+      },
+      {
+        icon: '🕒',
+        title: 'Timezone',
+        value: generatedTrip.destination.timezone,
+        description: 'Aligned for transfers, reservations, and schedule comfort.',
+      },
+    ]
+    : []
+
+  const itineraryDays = generatedTrip?.itinerary ?? []
+
+  const handleExportHtml = () => {
+    if (!generatedTrip) return
+    exportTripWebsiteHtml(generatedTrip)
+  }
+
+  const handleExportEmail = () => {
+    if (!generatedTrip) return
+    exportTripEmailHtml(generatedTrip)
+  }
+
+  const handleExportPdf = () => {
+    if (!generatedTrip) return
+    exportTripGuidePdf(generatedTrip)
+  }
 
   return (
-    <main className="atlas-landing">
-      {transitionState !== 'idle' && (
-        <div className={`journey-transition ${transitionState === 'complete' ? 'is-complete' : ''}`}>
-          <div className="journey-panel">
-            {transitionState === 'loading' ? (
-              <>
-                <p className="journey-kicker">atlas • crafting your journey</p>
-                <h2>Preparing something remarkable.</h2>
-                <p className="journey-copy">
-                  The experience is being shaped into a beautifully composed travel book.
-                </p>
-                <div className="transition-steps" aria-live="polite">
-                  {journeySteps.map((step, index) => {
-                    const isActive = index === activeStep
-                    const isComplete = index < activeStep
+    <main className={`atlas-onepage${isDesigning ? ' is-designing' : ''}`}>
+      <section className="atlas-onepage-hero">
+        <div className="atlas-onepage-hero-overlay" />
+        <div className="atlas-onepage-content">
+          <p className="atlas-onepage-kicker">Atlas React Elements Challenge</p>
+          <h1 className="atlas-onepage-title">Design Your Next Journey</h1>
+          <p className="atlas-onepage-subtitle">One trip. Three beautiful render targets.</p>
 
-                    return (
-                      <div
-                        key={step}
-                        className={`transition-step ${isActive ? 'is-active' : ''} ${isComplete ? 'is-complete' : ''}`}
-                      >
-                        <span className="transition-icon">{isComplete ? '✓' : isActive ? '•' : '○'}</span>
-                        <span>{step}</span>
+          <form
+            className={`atlas-planner-card${isDesigning ? ' is-loading' : ''}`}
+            onSubmit={(event) => {
+              event.preventDefault()
+              handleDesignJourney()
+            }}
+          >
+            <div className="atlas-planner-grid">
+              <label className="atlas-field atlas-field-wide">
+                <span>Destination</span>
+                <select value={destination} onChange={(event) => setDestination(event.target.value as (typeof destinationOptions)[number])}>
+                  {destinationOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="atlas-field">
+                <span>Duration</span>
+                <select value={duration} onChange={(event) => setDuration(event.target.value as (typeof durationOptions)[number])}>
+                  {durationOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="atlas-field">
+                <span>Travel Style</span>
+                <select value={travelStyle} onChange={(event) => setTravelStyle(event.target.value as (typeof travelStyleOptions)[number])}>
+                  {travelStyleOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="atlas-field">
+                <span>Budget</span>
+                <select value={budget} onChange={(event) => setBudget(event.target.value as (typeof budgetOptions)[number])}>
+                  {budgetOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="atlas-field">
+                <span>Travellers</span>
+                <select value={travelers} onChange={(event) => setTravelers(event.target.value as (typeof travelerOptions)[number])}>
+                  {travelerOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <button type="submit" className="atlas-design-button" disabled={isDesigning}>
+              {isDesigning ? 'Designing...' : 'Design My Journey'}
+            </button>
+          </form>
+
+          {isDesigning ? (
+            <div className="atlas-loading" aria-live="polite">
+              <div className="atlas-loading-line" aria-hidden="true">
+                <span className="atlas-loading-line-fill" />
+              </div>
+              <div className="atlas-loading-message">
+                <span className="atlas-loading-dot" />
+                <span className="atlas-loading-dot" />
+                <span className="atlas-loading-dot" />
+                <p>{loadingTips[loadingTipIndex]}</p>
+              </div>
+            </div>
+          ) : null}
+
+          <ConversationProvider agentId={conciergeAgentId}>
+            <AtlasConciergeSection />
+          </ConversationProvider>
+        </div>
+      </section>
+
+      <section ref={resultSectionRef} className={`atlas-result ${showResult ? 'is-visible' : ''}`}>
+        <div className="atlas-result-content">
+          {!hasDataset ? (
+            <section className="atlas-dataset-placeholder" aria-live="polite">
+              <p className="atlas-result-kicker">Atlas Local Data</p>
+              <h2>Destination dataset coming soon.</h2>
+              <p>
+                We only support Tokyo, Dubai, and Istanbul in local dataset mode.
+              </p>
+            </section>
+          ) : (
+            <>
+              <section className="atlas-generated-hero">
+                <div className="atlas-generated-hero-media" aria-hidden="true">
+                  {destinationVisual ? <img src={destinationVisual.image} alt={`${generatedTrip?.destination.name} destination view`} /> : null}
+                  <div className="atlas-generated-hero-glow" />
+                </div>
+                <div className="atlas-generated-hero-content">
+                  <p className="atlas-result-kicker">Generated by Atlas</p>
+                  <h2>{generatedTrip?.destination.name}, {generatedTrip?.destination.country}</h2>
+                  <p>{generatedTrip?.overview.summary}</p>
+                  <div className="atlas-generated-meta">
+                    <span>{duration}</span>
+                    <span>{travelStyle}</span>
+                    <span>{budget}</span>
+                    <span>{travelers}</span>
+                    <span>{generationTimestamp}</span>
+                  </div>
+                </div>
+              </section>
+
+              <section className="atlas-section-divider" aria-label="Journey overview">
+                <p className="atlas-result-kicker">Journey Overview</p>
+                <h3>{generatedTrip?.overview.vibe}</h3>
+              </section>
+
+              <section className="atlas-result-facts" aria-label="Journey summary cards">
+                {summaryCards.map((card) => (
+                  <article key={card.title}>
+                    <p className="atlas-fact-icon" aria-hidden="true">{card.icon}</p>
+                    <span>{card.title}</span>
+                    <strong>{card.value}</strong>
+                    <small>{card.description}</small>
+                  </article>
+                ))}
+              </section>
+
+              <section className="atlas-section-divider" aria-label="Daily itinerary">
+                <p className="atlas-result-kicker">Daily Itinerary</p>
+                <h3>Day-by-day generated timeline</h3>
+              </section>
+
+              <section className="atlas-itinerary" aria-label="Generated itinerary timeline">
+                {itineraryDays.length ? itineraryDays.map((day, index) => {
+                  const morning = day.activities[0]
+                  const afternoon = day.activities[1]
+                  const evening = day.activities[2]
+                  const restaurant = generatedTrip?.restaurants[index % (generatedTrip?.restaurants.length || 1)]
+                  const transport = generatedTrip?.transportation[index % (generatedTrip?.transportation.length || 1)]
+                  return (
+                    <article key={day.id} className="atlas-day-card">
+                      <div className="atlas-day-card-head">
+                        <p className="atlas-result-kicker">Day {day.dayNumber}</p>
+                        <h4>{day.title}</h4>
+                        <p>{day.summary}</p>
                       </div>
+                      <div className="atlas-day-card-grid">
+                        <section>
+                          <span>Morning</span>
+                          <p>{morning?.title ?? 'Morning details coming soon.'}</p>
+                        </section>
+                        <section>
+                          <span>Afternoon</span>
+                          <p>{afternoon?.title ?? 'Afternoon details coming soon.'}</p>
+                        </section>
+                        <section>
+                          <span>Evening</span>
+                          <p>{evening?.title ?? 'Evening details coming soon.'}</p>
+                        </section>
+                        <section>
+                          <span>Restaurant</span>
+                          <p>{restaurant?.name ?? 'Restaurant recommendation coming soon.'}</p>
+                        </section>
+                        <section>
+                          <span>Transportation</span>
+                          <p>{transport ? `${transport.mode.toUpperCase()} · ${transport.from} to ${transport.to}` : 'Transport details coming soon.'}</p>
+                        </section>
+                        <section>
+                          <span>Estimated Spend</span>
+                          <p>{generatedTrip?.budget.currency} {perDayEstimate.toLocaleString()}</p>
+                        </section>
+                        <section>
+                          <span>Highlights</span>
+                          <p>{day.activities.slice(0, 2).map((activity) => activity.title).join(' · ') || 'Highlights coming soon.'}</p>
+                        </section>
+                        <section>
+                          <span>Notes</span>
+                          <p>{day.activities.find((activity) => activity.notes)?.notes ?? 'Local notes and practical guidance will appear here.'}</p>
+                        </section>
+                      </div>
+                    </article>
+                  )
+                }) : (
+                  <article className="atlas-day-card atlas-day-card-placeholder">
+                    <p>Itinerary is being prepared. Day cards will appear here when journey data is ready.</p>
+                  </article>
+                )}
+              </section>
+
+              <section className="atlas-section-divider" aria-label="Accommodation and dining">
+                <p className="atlas-result-kicker">Accommodation and Dining</p>
+                <h3>Stay and food recommendations</h3>
+              </section>
+
+              <section className="atlas-secondary-grid" aria-label="Accommodation and dining cards">
+                <article className="atlas-secondary-card">
+                  <p className="atlas-result-kicker">Accommodation</p>
+                  <h4>{generatedTrip?.hotel.name ?? 'Hotel details pending'}</h4>
+                  <p>{generatedTrip ? `${generatedTrip.hotel.propertyType} in ${generatedTrip.hotel.neighborhood}` : 'Your stay details will appear here.'}</p>
+                </article>
+                <article className="atlas-secondary-card">
+                  <p className="atlas-result-kicker">Dining</p>
+                  <h4>{generatedTrip?.restaurants[0]?.name ?? 'Restaurant details pending'}</h4>
+                  <p>{generatedTrip?.restaurants[0] ? `${generatedTrip.restaurants[0].cuisine} · ${generatedTrip.restaurants[0].neighborhood}` : 'Dining highlights will appear here.'}</p>
+                </article>
+                <article className="atlas-secondary-card">
+                  <p className="atlas-result-kicker">Budget</p>
+                  <h4>{generatedTrip ? `${generatedTrip.budget.currency} ${generatedTrip.budget.estimatedSpend.toLocaleString()}` : 'Budget details pending'}</h4>
+                  <p>{generatedTrip ? 'Estimated journey spend across stays, dining, and activities.' : 'Budget guidance will appear here.'}</p>
+                </article>
+                <article className="atlas-secondary-card">
+                  <p className="atlas-result-kicker">Emergency</p>
+                  <h4>{generatedTrip?.emergencyInfo.localEmergencyNumber ?? 'Emergency details pending'}</h4>
+                  <p>{generatedTrip?.emergencyInfo.contactName ?? 'Safety contacts and local support information will appear here.'}</p>
+                </article>
+              </section>
+
+              <section className="atlas-render-panel" aria-label="Render target preview">
+                <div className="atlas-render-tabs" role="tablist" aria-label="Render target">
+                  {renderModes.map((mode) => {
+                    const isActive = mode === activeRenderMode
+                    return (
+                      <button
+                        key={mode}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        className={`atlas-render-tab${isActive ? ' is-active' : ''}`}
+                        onClick={() => setActiveRenderMode(mode)}
+                      >
+                        {mode}
+                      </button>
                     )
                   })}
                 </div>
-                <div className="transition-progress" aria-hidden="true">
-                  <span style={{ width: `${((activeStep + 1) / journeySteps.length) * 100}%` }} />
+
+                <div className="preview-export-actions" aria-label="Export current trip">
+                  <button
+                    type="button"
+                    className="preview-export-button"
+                    onClick={handleExportHtml}
+                    disabled={!generatedTrip}
+                  >
+                    Export HTML
+                  </button>
+                  <button
+                    type="button"
+                    className="preview-export-button"
+                    onClick={handleExportEmail}
+                    disabled={!generatedTrip}
+                  >
+                    Export Email
+                  </button>
+                  <button
+                    type="button"
+                    className="preview-export-button"
+                    onClick={handleExportPdf}
+                    disabled={!generatedTrip}
+                  >
+                    Export PDF
+                  </button>
                 </div>
-              </>
-            ) : (
-              <>
-                <div className="journey-check">✓</div>
-                <p className="journey-kicker">atlas • journey generated</p>
-                <h2>Your travel book is ready.</h2>
-                <div className="journey-summary-grid">
-                  <div>
-                    <span>Destination</span>
-                    <strong>{journeySummary.destination}</strong>
-                  </div>
-                  <div>
-                    <span>Days</span>
-                    <strong>{journeySummary.days}</strong>
-                  </div>
-                  <div>
-                    <span>Budget</span>
-                    <strong>{journeySummary.budget}</strong>
-                  </div>
-                  <div>
-                    <span>Travel Style</span>
-                    <strong>{journeySummary.style}</strong>
-                  </div>
+
+                <div className="atlas-render-surface">
+                  {activeRenderer()}
                 </div>
-                <p className="journey-status">Status: {journeySummary.status}</p>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-      <section className="hero-section">
-        <div className="hero-content">
-          <p className="hero-kicker">atlas • luxury travel intelligence</p>
-          <h1 className="hero-display">A trip should feel like a story worth keeping.</h1>
-          <p className="hero-copy">
-            Atlas is a refined travel planning experience that turns a few ideas into an
-            elegant, deeply personal journey.
-          </p>
-          <div className="hero-input-shell">
-            <div className="hero-prompt-card">
-              <div className="prompt-bubble" aria-hidden="true">
-                <span className="prompt-dot prompt-dot-1" />
-                <span className="prompt-dot prompt-dot-2" />
-                <span className="prompt-dot prompt-dot-3" />
-              </div>
-              <div className="prompt-copy">
-                <p className="prompt-label">Describe the kind of journey you want to create.</p>
-                <p className="prompt-placeholder">“7 days in Japan under ₹2 lakh...”</p>
-              </div>
-              <button type="button" className="hero-cta" onClick={beginJourney}>Design My Journey</button>
-            </div>
-            <div className="hero-trust-row">
-              <span className="trust-pill">✨ Powered by Gemini AI</span>
-              <span className="trust-pill">🌐 Build Once. Render Everywhere.</span>
-            </div>
-          </div>
+              </section>
+            </>
+          )}
         </div>
       </section>
-
-      <section className="section-spacing">
-        <div className="container-width">
-          <div className="section-intro">
-            <p className="caption">why atlas</p>
-            <h2 className="display-text">Travel planning should feel cinematic, calm, and deeply personal.</h2>
-          </div>
-          <div className="feature-grid">
-            <article className="feature-card">
-              <h3>Curated with intent</h3>
-              <p>Every detail is shaped around your pace, taste, and sense of occasion.</p>
-            </article>
-            <article className="feature-card">
-              <h3>Built for emotion</h3>
-              <p>The experience feels like a luxurious guidebook, not a checklist.</p>
-            </article>
-            <article className="feature-card">
-              <h3>One source of truth</h3>
-              <p>The same Trip can later travel across web, email, and print.</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-spacing">
-        <div className="container-width">
-          <div className="book-preview glass-surface">
-            <div className="book-copy">
-              <p className="caption">travel book preview</p>
-              <h2 className="display-text">The trip arrives as a beautifully composed guide.</h2>
-              <p className="body-copy">
-                From the opening page to the final note, Atlas presents each journey as a refined narrative.
-              </p>
-            </div>
-            <div className="book-mock" aria-hidden="true">
-              <div className="book-page book-page-left">
-                <div className="page-visual" />
-                <div className="page-content">
-                  <p className="page-eyebrow">Japan</p>
-                  <h3>7-Day Journey</h3>
-                  <p className="page-title">Luxury Family Escape</p>
-                  <p className="page-copy">A slow, beautifully paced itinerary shaped around temples, coastlines, and evenings that linger.</p>
-                  <div className="page-meta">
-                    <span>Estimated Budget</span>
-                    <strong>₹2.4L</strong>
-                  </div>
-                  <div className="page-meta">
-                    <span>Best Season</span>
-                    <strong>Spring</strong>
-                  </div>
-                  <div className="page-meta">
-                    <span>Travel Style</span>
-                    <strong>Private + Calm</strong>
-                  </div>
-                </div>
-              </div>
-              <div className="book-page book-page-right">
-                <div className="page-topline">
-                  <span>Day 1 • Arrival</span>
-                  <span>Kyoto</span>
-                </div>
-                <div className="page-grid">
-                  <div>
-                    <h4>Morning</h4>
-                    <p>Arrival with private transfer and a quiet check-in overlooking the garden court.</p>
-                  </div>
-                  <div>
-                    <h4>Afternoon</h4>
-                    <p>Tea service, a slow walk through temple lanes, and a long lunch at a riverside omakase.</p>
-                  </div>
-                  <div>
-                    <h4>Evening</h4>
-                    <p>Rooftop dinner with lantern light and a gentle evening stroll.</p>
-                  </div>
-                  <div>
-                    <h4>Weather</h4>
-                    <p>18°C • Light breeze • Clear skies</p>
-                  </div>
-                </div>
-                <div className="page-footer">
-                  <div>
-                    <span className="footer-label">Hotel</span>
-                    <strong>Garden Residence</strong>
-                  </div>
-                  <div>
-                    <span className="footer-label">Top Restaurant</span>
-                    <strong>Hana No Mai</strong>
-                  </div>
-                  <div>
-                    <span className="footer-label">Packing</span>
-                    <strong>Layered neutrals</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <p className="book-caption">Generated once. Shared everywhere.</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-spacing">
-        <div className="container-width">
-          <div className="section-intro">
-            <p className="caption">build once, render everywhere</p>
-            <h2 className="display-text">One Trip object powers the web experience, the email, and the printable guide.</h2>
-          </div>
-          <div className="render-grid">
-            <article className="render-card glass-surface">
-              <h3>Web Experience</h3>
-              <p>Immersive, editorial, and interactive.</p>
-            </article>
-            <article className="render-card glass-surface">
-              <h3>Email</h3>
-              <p>Elegant and structured for sharing.</p>
-            </article>
-            <article className="render-card glass-surface">
-              <h3>Printable Travel Guide</h3>
-              <p>Thoughtfully composed for print and offline use.</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-spacing">
-        <div className="container-width">
-          <div className="section-intro">
-            <p className="caption">testimonials</p>
-            <h2 className="display-text">Designed for travelers who expect more than a checklist.</h2>
-          </div>
-          <div className="testimonial-grid">
-            <article className="testimonial-card premium-card">
-              <p>“Atlas feels like a personal concierge, not software.”</p>
-              <span>— Elena, Milan</span>
-            </article>
-            <article className="testimonial-card premium-card">
-              <p>“It makes planning feel calm and beautifully considered.”</p>
-              <span>— Marcus, Copenhagen</span>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-spacing final-cta-section">
-        <div className="container-width">
-          <div className="final-cta glass-surface">
-            <p className="caption">ready to begin</p>
-            <h2 className="display-text">Create a journey that feels as elevated as the destination itself.</h2>
-            <button type="button" className="hero-cta">Design My Journey</button>
-          </div>
-        </div>
-      </section>
-
-      <footer className="footer">
-        <div className="container-width footer-inner">
-          <span>Atlas</span>
-          <span>Luxury travel planning, thoughtfully rendered.</span>
-        </div>
-      </footer>
     </main>
   )
 }
