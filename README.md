@@ -28,6 +28,22 @@ Atlas addresses the challenge of multi-format content distribution in modern tra
 
 ---
 
+## 🖼️ Screenshots
+
+### Landing Page & Live Preview
+<img src="assets/landing.png" alt="Landing Page & Live Preview" width="100%" />
+
+### Website Renderer
+<img src="assets/html.png" alt="Website Renderer" width="100%" />
+
+### Email Renderer
+<img src="assets/email.png" alt="Email Renderer" width="100%" />
+
+### Travel Guide Renderer
+<img src="assets/travel guide.png" alt="Travel Guide Renderer" width="100%" />
+
+---
+
 ## 🧠 Personalization Engine
 
 The Atlas Personalization Engine (`src/lib/personalization/`) takes a base destination itinerary and dynamically shapes it based on three user-selected dimensions:
@@ -158,7 +174,6 @@ aitravel/
    ```
 
 ---
-
 
 
 ## 🔮 Future Improvements
