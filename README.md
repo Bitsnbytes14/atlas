@@ -159,24 +159,7 @@ aitravel/
 
 ---
 
-## 🖼️ Screenshots
 
-### Landing Page & Live Preview
-![Landing Page Placeholder](./public/screenshots/landing-page-placeholder.png)
-
-### Website Renderer Target
-![Website Renderer Placeholder](./public/screenshots/website-renderer-placeholder.png)
-
-### Email Renderer Target
-![Email Renderer Placeholder](./public/screenshots/email-renderer-placeholder.png)
-
-### Travel Guide Document Target
-![Travel Guide Placeholder](./public/screenshots/travel-guide-placeholder.png)
-
-### AI Voice Concierge Widget
-![Voice Concierge Placeholder](./public/screenshots/voice-concierge-placeholder.png)
-
----
 
 ## 🔮 Future Improvements
 
