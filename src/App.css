@@ -886,14 +886,18 @@
 }
 
 .tg-page {
-  min-height: 1120px;
+  min-height: auto;
   background: #fdfbf7;
   border: 1px solid #d9d0c1;
   box-shadow: 0 16px 36px rgba(20, 18, 14, 0.08);
-  padding: 3.1rem 2.8rem;
+  padding: clamp(2rem, 4vw, 3.1rem) clamp(1.8rem, 3.5vw, 2.8rem);
   margin-bottom: 1.4rem;
   position: relative;
   page-break-after: always;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 1.5rem;
 }
 
 .tg-page:last-child {
@@ -1214,11 +1218,14 @@
 }
 
 .tg-final-inner {
-  height: 100%;
-  display: grid;
-  place-content: center;
+  margin-top: 2.5rem;
+  padding-top: 1.8rem;
+  border-top: 1px solid #ddd3c6;
   text-align: center;
-  gap: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .tg-final-inner h2 {
@@ -2491,39 +2498,566 @@
   margin: 0;
   color: #fffaf2;
   font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
-  font-size: clamp(2.6rem, 5.8vw, 5.7rem);
-  line-height: 0.91;
+  font-size: clamp(2.0rem, 3.8vw, 3.4rem);
+  line-height: 1.15;
   letter-spacing: -0.02em;
-  max-width: 11ch;
+  max-width: 16ch;
   text-wrap: balance;
-  text-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
+  text-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
 }
 
 .atlas-onepage-subtitle {
   margin: 0;
-  color: rgba(246, 250, 252, 0.92);
-  font-size: clamp(1rem, 1.28vw, 1.15rem);
-  line-height: 1.9;
+  color: rgba(246, 250, 252, 0.88);
+  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  line-height: 1.5;
   max-width: 58ch;
 }
 
-.atlas-planner-card {
-  margin-top: 0.75rem;
-  max-width: 940px;
+.atlas-hero-planner-layout {
+  margin-top: 0.5rem;
   display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+@media (min-width: 960px) {
+  .atlas-hero-planner-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.atlas-planner-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
   gap: 1.15rem;
-  padding: clamp(1.2rem, 2.2vw, 1.75rem);
-  border-radius: 30px;
+  padding: clamp(1.2rem, 2vw, 1.6rem);
+  border-radius: 26px;
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.08)),
-    rgba(20, 28, 40, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+    linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.07)),
+    rgba(20, 28, 40, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.32);
   backdrop-filter: blur(20px) saturate(110%);
   -webkit-backdrop-filter: blur(20px) saturate(110%);
   box-shadow:
-    0 28px 70px rgba(0, 0, 0, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+    0 24px 64px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 240ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 220ms ease;
+}
+
+/* Live Preview Panel - Minimal & Clean */
+.atlas-live-preview-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.9rem;
+  padding: clamp(1.2rem, 2vw, 1.5rem);
+  border-radius: 26px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05)),
+    rgba(14, 22, 34, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(24px) saturate(115%);
+  -webkit-backdrop-filter: blur(24px) saturate(115%);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  color: #fff;
+  transition: border-color 220ms ease, box-shadow 220ms ease;
+  animation: atlasFadeIn 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.atlas-live-preview-card:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 30px 72px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.atlas-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: fit-content;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e0f2fe;
+}
+
+.atlas-preview-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.atlas-preview-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.atlas-preview-row:last-child {
+  border-bottom: none;
+}
+
+.atlas-row-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.atlas-row-icon {
+  font-size: 0.85rem;
+}
+
+.atlas-row-label {
+  font-size: 0.67rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+}
+
+.atlas-row-body {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.atlas-row-title {
+  font-size: 0.86rem;
+  color: #f8fafc;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.atlas-row-sub {
+  margin: 0;
+  font-size: 0.73rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.3;
+}
+
+.atlas-price-highlight {
+  font-weight: 700;
+  color: #6ee7b7;
+}
+
+.atlas-budget-summary {
+  display: flex;
+  flex-direction: column;
+}
+
+.atlas-budget-label {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.atlas-budget-value {
+  font-size: 1.05rem;
+  color: #34d399;
+  font-weight: 700;
+}
+
+/* Floating AI Assistant Widget */
+.atlas-floating-assistant {
+  position: fixed;
+  bottom: 1.75rem;
+  right: 1.75rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.atlas-assistant-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.12)),
+    rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 220ms ease, border-color 200ms ease;
+}
+
+.atlas-assistant-trigger:hover {
+  transform: translateY(-2px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 20px 42px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.atlas-assistant-trigger.is-connected {
+  border-color: #34d399;
+}
+
+.atlas-trigger-icon {
+  font-size: 1.1rem;
+}
+
+.atlas-trigger-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.atlas-trigger-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.4), transparent 70%);
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+
+.atlas-assistant-trigger.is-connected .atlas-trigger-glow {
+  opacity: 1;
+  animation: atlasPulse 2.5s infinite;
+}
+
+/* Floating Assistant Panel */
+.atlas-assistant-panel {
+  width: 350px;
+  max-width: calc(100vw - 2.5rem);
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.25rem;
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.95)),
+    rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(28px) saturate(120%);
+  -webkit-backdrop-filter: blur(28px) saturate(120%);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+  color: #fff;
+  animation: atlasSlideUp 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes atlasSlideUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.atlas-assistant-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.atlas-assistant-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.atlas-assistant-sparkle {
+  font-size: 1.1rem;
+}
+
+.atlas-assistant-title-group h4 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.atlas-assistant-status {
+  margin: 0;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.65);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-transform: capitalize;
+}
+
+.atlas-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.atlas-status-dot.is-connected {
+  background: #34d399;
+  box-shadow: 0 0 6px #34d399;
+}
+
+.atlas-assistant-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.atlas-assistant-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.atlas-assistant-body {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.atlas-assistant-prompt {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.atlas-assistant-signal {
+  font-size: 0.75rem;
+  color: #6ee7b7;
+  font-style: italic;
+  padding: 0.4rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(52, 211, 153, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.18);
+}
+
+.atlas-assistant-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.atlas-assistant-footer {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 0.4rem;
+}
+
+.atlas-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+  animation: atlasPulse 2s infinite;
+}
+
+@keyframes atlasPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.25); }
+}
+
+.atlas-preview-hero {
+  position: relative;
+  height: 130px;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: 0.95rem;
+}
+
+.atlas-preview-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.atlas-live-preview-card:hover .atlas-preview-image {
+  transform: scale(1.04);
+}
+
+.atlas-preview-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(5, 12, 22, 0.85) 100%);
+}
+
+.atlas-preview-hero-text {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.atlas-preview-kicker {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 600;
+}
+
+.atlas-preview-title {
+  margin: 0;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-size: 1.4rem;
+  line-height: 1.1;
+  color: #ffffff;
+}
+
+.atlas-preview-country {
+  font-weight: 300;
+  opacity: 0.85;
+}
+
+.atlas-preview-budget-tag {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #a7f3d0;
+  font-weight: 500;
+}
+
+.atlas-preview-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.atlas-tag {
+  padding: 0.25rem 0.55rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 0.73rem;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* Planner card chips use the same .atlas-tag style above */
+
+.atlas-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.7rem;
+}
+
+.atlas-preview-block {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.8rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(10px);
+}
+
+.atlas-preview-block-wide {
+  grid-column: 1 / -1;
+}
+
+.atlas-preview-block-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.atlas-block-icon {
+  font-size: 0.88rem;
+}
+
+.atlas-block-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 600;
+}
+
+.atlas-block-title {
+  font-size: 0.9rem;
+  color: #f8fafc;
+  line-height: 1.25;
+}
+
+.atlas-block-sub {
+  margin: 0;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.35;
+}
+
+.atlas-block-note {
+  margin: 0;
+  font-size: 0.73rem;
+  font-style: italic;
+  color: #fbbf24;
+  line-height: 1.3;
+}
+
+.atlas-price-level {
+  font-weight: 700;
+  color: #6ee7b7;
+}
+
+.atlas-preview-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+  margin-top: 0.15rem;
+}
+
+.atlas-amenity-chip {
+  padding: 0.12rem 0.42rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.11);
+  font-size: 0.67rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.atlas-preview-tip-block {
+  background: rgba(59, 130, 246, 0.09);
+  border-color: rgba(96, 165, 250, 0.25);
+}
+
+.atlas-preview-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.atlas-preview-flow-hint {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .atlas-planner-card:hover {
@@ -2549,101 +3083,248 @@
   pointer-events: none;
 }
 
-.atlas-planner-grid {
+/* ── Planner Card – Inner structure ── */
+.atlas-planner-header {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.atlas-planner-header-top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.atlas-planner-compass {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.atlas-planner-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.atlas-planner-divider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.28), rgba(255,255,255,0.06) 80%);
+  border-radius: 999px;
+}
+
+/* ── Fields ── */
+.atlas-planner-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
 .atlas-field {
   display: grid;
-  gap: 0.46rem;
+  gap: 0.42rem;
 }
 
 .atlas-field-wide {
   grid-column: 1 / -1;
 }
 
-.atlas-field span {
-  color: rgba(247, 252, 255, 0.9);
+.atlas-field > span {
+  display: flex;
+  align-items: center;
+  gap: 0.32rem;
+  color: rgba(247, 252, 255, 0.82);
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 0.67rem;
+  letter-spacing: 0.13em;
+  font-size: 0.66rem;
   font-weight: 700;
+}
+
+.atlas-field-icon {
+  font-size: 0.82rem;
+  line-height: 1;
 }
 
 .atlas-field select {
   width: 100%;
-  height: 3.08rem;
+  height: 3rem;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.31);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.12));
-  color: #f8fcff;
-  padding: 0.65rem 0.9rem;
-  font-size: 0.94rem;
-  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease, transform 180ms ease;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.09));
+  color: #f2f8ff;
+  padding: 0 2.2rem 0 0.9rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease, transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
   -webkit-appearance: none;
   appearance: none;
   background-image:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.12)),
-    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.86) 50%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.86) 50%, transparent 50%);
-  background-position:
-    center,
-    calc(100% - 16px) calc(50% - 2px),
-    calc(100% - 11px) calc(50% - 2px);
-  background-size:
-    auto,
-    5px 5px,
-    5px 5px;
+    linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.09)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.7)' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: center, calc(100% - 14px) 50%;
+  background-size: auto, 12px 8px;
   background-repeat: no-repeat;
-  padding-right: 2.1rem;
 }
 
 .atlas-field select:hover {
-  border-color: rgba(255, 255, 255, 0.44);
+  border-color: rgba(255, 255, 255, 0.46);
+  background-image:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.14)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.9)' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: center, calc(100% - 14px) 50%;
+  background-size: auto, 12px 8px;
+  background-repeat: no-repeat;
   transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .atlas-field select:focus-visible {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.28), 0 12px 28px rgba(5, 12, 18, 0.22);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.16));
+  border-color: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.22),
+    0 12px 28px rgba(5, 12, 18, 0.22);
+  background-image:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.16)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: center, calc(100% - 14px) 50%;
+  background-size: auto, 12px 8px;
+  background-repeat: no-repeat;
 }
 
 .atlas-field select option {
-  color: #15303d;
+  background: #14263a;
+  color: #e8f4fc;
 }
 
+/* ── Live Selection Summary ── */
+.atlas-planner-summary {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+}
+
+.atlas-planner-summary-label {
+  margin: 0;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.atlas-planner-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* ── CTA wrapper ── */
+.atlas-planner-cta-wrap {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: auto;
+}
+
+/* ── Design Button – Premium Redesign ── */
 .atlas-design-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
   border: none;
   border-radius: 999px;
-  padding: 0.9rem 1.35rem;
-  background: linear-gradient(135deg, #fffaf2 0%, #f3e3c4 55%, #ead4aa 100%);
-  color: #10222e;
-  font-weight: 700;
+  padding: 1.05rem 1.6rem;
+  min-height: 60px;
+  width: 100%;
+  background: linear-gradient(135deg, #fff9ee 0%, #f5dfa6 42%, #e8c97a 78%, #d4aa52 100%);
+  color: #12222e;
+  font-weight: 800;
+  font-size: 1.02rem;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  width: fit-content;
-  box-shadow: 0 12px 28px rgba(5, 12, 18, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.45);
-  transition: transform 160ms ease, box-shadow 180ms ease, filter 180ms ease;
+  box-shadow:
+    0 14px 32px rgba(5, 12, 18, 0.28),
+    0 2px 8px rgba(212, 170, 82, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  transition:
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 200ms ease,
+    background 200ms ease,
+    filter 180ms ease;
+  overflow: hidden;
+}
+
+.atlas-design-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, transparent 55%);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
 }
 
 .atlas-design-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 32px rgba(5, 12, 18, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transform: translateY(-3px) scale(1.012);
+  background: linear-gradient(135deg, #fffbf3 0%, #f9e8b2 42%, #edd481 78%, #c9a045 100%);
+  box-shadow:
+    0 22px 46px rgba(5, 12, 18, 0.34),
+    0 4px 14px rgba(212, 170, 82, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  filter: brightness(1.04);
+}
+
+.atlas-design-button:hover::before {
+  opacity: 1;
 }
 
 .atlas-design-button:active {
-  transform: translateY(0);
-  filter: saturate(0.96);
-  box-shadow: 0 8px 18px rgba(5, 12, 18, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  transform: translateY(-1px) scale(1);
+  filter: brightness(0.98);
+  box-shadow:
+    0 10px 22px rgba(5, 12, 18, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .atlas-design-button:disabled {
-  opacity: 0.88;
+  opacity: 0.82;
   cursor: progress;
   animation: atlasButtonBreathe 1.1s ease-in-out infinite;
+}
+
+.atlas-btn-icon {
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.atlas-btn-arrow {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: transform 200ms ease;
+}
+
+.atlas-design-button:hover .atlas-btn-arrow {
+  transform: translateX(3px);
+}
+
+/* ── Footer note ── */
+.atlas-planner-footer-note {
+  margin: 0;
+  text-align: center;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.42);
+  letter-spacing: 0.03em;
 }
 
 .atlas-loading {
@@ -3449,10 +4130,10 @@
   }
 
   .atlas-planner-card {
-    padding: 1.1rem;
+    padding: 1.25rem;
   }
 
-  .atlas-planner-grid {
+  .atlas-planner-fields {
     grid-template-columns: 1fr;
   }
 
@@ -3564,19 +4245,762 @@
   }
 }
 
-/* Final renderer polish: Website, Email, Travel Guide only */
+
+
+/* =========================================================
+   Final renderer polish: Website, Email, Travel Guide only
+   ========================================================= */
 .render-surface--page-premium {
   max-width: 1140px;
   padding: 1.35rem;
 }
 
+/* ── Hero ── */
 .webtrip-hero {
+  position: relative;
   min-height: 500px;
   padding: 2.4rem;
   margin-bottom: 1.4rem;
   border-radius: 34px;
+  overflow: hidden;
   isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
+
+.webtrip-hero-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.04) contrast(1.04);
+  z-index: -2;
+}
+
+.webtrip-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(112deg, rgba(5, 16, 25, 0.8), rgba(6, 28, 42, 0.55) 55%, rgba(9, 20, 32, 0.78)),
+    radial-gradient(circle at 90% 24%, rgba(255, 255, 255, 0.2), transparent 35%);
+  z-index: -1;
+}
+
+.webtrip-hero-content {
+  position: relative;
+}
+
+.webtrip-title {
+  font-size: clamp(2.55rem, 5.2vw, 4.6rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+
+.webtrip-intro {
+  max-width: 58ch;
+}
+
+.webtrip-hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.9rem;
+}
+
+.webtrip-hero-tags span {
+  padding: 0.4rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(249, 252, 255, 0.9);
+  font-size: 0.73rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── Sections ── */
+.webtrip-section {
+  margin-bottom: 1.45rem;
+}
+
+.webtrip-section-head {
+  margin-bottom: 1rem;
+}
+
+.webtrip-section-head h2 {
+  margin: 0.28rem 0 0;
+}
+
+.webtrip-section-kicker {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7a9a8a;
+  font-weight: 700;
+}
+
+/* ── Facts bar ── */
+.webtrip-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.45rem;
+}
+
+.webtrip-fact-card {
+  padding: 0.88rem 1rem;
+  border-radius: 16px;
+  border: 1px solid #e5d8c1;
+  background: linear-gradient(145deg, #fffdf8, #fff8ef);
+  box-shadow: 0 6px 18px rgba(14, 24, 35, 0.06);
+}
+
+.webtrip-fact-card p {
+  margin: 0;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7a8e97;
+}
+
+.webtrip-fact-card strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: #152835;
+  font-size: 0.96rem;
+  line-height: 1.3;
+}
+
+/* ── Card shared hover transitions ── */
+.webtrip-fact-card,
+.webtrip-itinerary-card,
+.webtrip-feature-card,
+.webtrip-restaurant-card,
+.webtrip-experience-card,
+.webtrip-weather-card {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.webtrip-fact-card:hover,
+.webtrip-itinerary-card:hover,
+.webtrip-feature-card:hover,
+.webtrip-restaurant-card:hover,
+.webtrip-experience-card:hover,
+.webtrip-weather-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px rgba(8, 24, 32, 0.11);
+  border-color: #dcc9ac;
+}
+
+/* ── Itinerary grid – ADAPTIVE by data-count ── */
+.webtrip-itinerary-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-auto-rows: 1fr;
+}
+
+/* 3 days: 2 on row 1, 1 full-width on row 2 */
+.webtrip-itinerary-grid[data-count="3"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.webtrip-itinerary-grid[data-count="3"] .webtrip-itinerary-card:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+/* 5 days: 2 + 2 + 1 full-width */
+.webtrip-itinerary-grid[data-count="5"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.webtrip-itinerary-grid[data-count="5"] .webtrip-itinerary-card:nth-child(5) {
+  grid-column: 1 / -1;
+}
+
+/* 7 days: 3 + 3 + 1 full-width */
+.webtrip-itinerary-grid[data-count="7"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.webtrip-itinerary-grid[data-count="7"] .webtrip-itinerary-card:nth-child(7) {
+  grid-column: 1 / -1;
+}
+
+/* 4 days: 2 × 2 */
+.webtrip-itinerary-grid[data-count="4"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* 6 days: 3 × 2 */
+.webtrip-itinerary-grid[data-count="6"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.webtrip-itinerary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 1.1rem 1rem;
+  border-radius: 20px;
+  border: 1px solid #e5d8c1;
+  background: linear-gradient(155deg, #fffdf8, #fff9ef);
+  box-shadow: 0 8px 22px rgba(14, 24, 35, 0.07);
+}
+
+.webtrip-itinerary-day {
+  margin: 0;
+  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7a9a8a;
+  font-weight: 700;
+}
+
+.webtrip-itinerary-card h3 {
+  margin: 0;
+  color: #152835;
+  font-size: 1.04rem;
+  line-height: 1.25;
+}
+
+.webtrip-itinerary-card > p {
+  margin: 0;
+  color: #4c6472;
+  font-size: 0.87rem;
+  line-height: 1.58;
+  flex: 1;
+}
+
+.webtrip-itinerary-meta {
+  margin-top: auto;
+  padding-top: 0.55rem;
+  border-top: 1px solid #ece2d0;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.webtrip-itinerary-meta span {
+  color: #4c6674;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.webtrip-itinerary-meta strong {
+  color: #2a4856;
+}
+
+/* ── Budget / weather grid ── */
+.webtrip-budget-weather-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0.88rem;
+}
+
+/* ── Feature cards (hotel, packing, emergency) ── */
+.webtrip-feature-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1.2rem 1.2rem;
+  border-radius: 22px;
+  border: 1px solid #e5d8c1;
+  background: linear-gradient(155deg, #fffdf8, #fff9ef);
+  box-shadow: 0 8px 22px rgba(14, 24, 35, 0.07);
+  align-items: start;
+}
+
+.webtrip-feature-card h2 {
+  margin: 0.22rem 0 0;
+  color: #152835;
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
+}
+
+.webtrip-feature-card > div > p {
+  margin: 0.5rem 0 0;
+  color: #4a6170;
+  line-height: 1.68;
+  font-size: 0.92rem;
+}
+
+.webtrip-feature-card--budget {
+  background: linear-gradient(145deg, #fffdf7, #f8eddc);
+}
+
+.webtrip-feature-card--hotel {
+  background: linear-gradient(145deg, #fffcf7, #f5ebe0);
+}
+
+.webtrip-feature-card--emergency {
+  background: linear-gradient(145deg, #fff8f8, #fce8e8);
+}
+
+.webtrip-meta-list {
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+  padding-top: 0.3rem;
+}
+
+.webtrip-meta-list p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #4a6170;
+  line-height: 1.45;
+}
+
+/* ── Restaurant grid ── */
+.webtrip-restaurant-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.webtrip-restaurant-card {
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid #e5d8c1;
+  background: linear-gradient(155deg, #fffdf8, #fff9ef);
+  box-shadow: 0 6px 18px rgba(14, 24, 35, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+}
+
+.webtrip-restaurant-card h3 {
+  margin: 0;
+  color: #152835;
+  font-size: 1rem;
+}
+
+.webtrip-restaurant-card p {
+  margin: 0;
+  color: #4c6674;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+/* ── Weather grid ── */
+.webtrip-weather-grid {
+  display: grid;
+  gap: 0.7rem;
+  align-content: start;
+}
+
+.webtrip-weather-card {
+  border-radius: 18px;
+  border: 1px solid #e6d9c1;
+  background: #fffdf9;
+  padding: 0.9rem;
+}
+
+.webtrip-weather-card p {
+  margin: 0;
+  color: #60727b;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.webtrip-weather-card h3 {
+  margin: 0.28rem 0 0;
+  color: #142b36;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-size: 1.28rem;
+}
+
+.webtrip-weather-card span {
+  display: inline-block;
+  margin-top: 0.26rem;
+  color: #486270;
+  text-transform: capitalize;
+}
+
+.webtrip-weather-card small {
+  display: block;
+  margin-top: 0.4rem;
+  color: #5f7682;
+  line-height: 1.55;
+}
+
+/* ── Local Experiences grid – ADAPTIVE by data-count ── */
+.webtrip-experience-grid {
+  display: grid;
+  gap: 0.85rem;
+  /* default: auto-fit 2-column */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+}
+
+/* 3 tips: 2 + 1 full width */
+.webtrip-experience-grid[data-count="3"] .webtrip-experience-card:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+/* 4 tips: 2 × 2 — default rule covers this */
+
+/* 5 tips: 2 + 2 + 1 full width */
+.webtrip-experience-grid[data-count="5"] .webtrip-experience-card:nth-child(5) {
+  grid-column: 1 / -1;
+}
+
+/* 6 tips: 3 × 2 */
+.webtrip-experience-grid[data-count="6"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.webtrip-experience-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.38rem;
+  padding: 1rem 1rem;
+  border-radius: 18px;
+  border: 1px solid #e5d8c1;
+  background: linear-gradient(155deg, #fffdf8, #fff9ef);
+  box-shadow: 0 6px 18px rgba(14, 24, 35, 0.06);
+}
+
+.webtrip-experience-card h3 {
+  margin: 0;
+  color: #152835;
+  font-size: 0.98rem;
+  line-height: 1.3;
+}
+
+.webtrip-experience-card p {
+  margin: 0;
+  color: #4c6472;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  flex: 1;
+}
+
+.webtrip-experience-card span {
+  margin-top: auto;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7a9a8a;
+}
+
+/* ── Packing list ── */
+.webtrip-packing-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.45rem 1rem;
+  margin: 0;
+  padding: 0.2rem 0 0;
+  list-style: none;
+}
+
+.webtrip-packing-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.88rem;
+  color: #3d5a68;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid #ede2ce;
+}
+
+.webtrip-packing-list li::before {
+  content: '✓';
+  font-size: 0.75rem;
+  color: #6aad8a;
+  flex-shrink: 0;
+}
+
+/* ── kicker / section helpers shared ── */
+.webtrip-kicker {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(200, 220, 230, 0.85);
+  font-weight: 700;
+}
+
+.webtrip-subintro {
+  margin: 0.45rem 0 0;
+  color: rgba(220, 235, 245, 0.88);
+  font-size: 0.92rem;
+  line-height: 1.68;
+  max-width: 54ch;
+}
+
+/* ── Email renderer ── */
+.render-surface--email-premium {
+  padding: 1rem;
+  color: #1a2e3b;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.emailtrip-shell {
+  border-radius: 22px;
+  border: 1px solid #e3d8c4;
+  box-shadow: 0 12px 34px rgba(9, 22, 33, 0.08);
+}
+
+.emailtrip-header {
+  padding: 1.1rem 1rem;
+}
+
+.emailtrip-confirm-badge {
+  margin: 0.62rem auto 0;
+  width: fit-content;
+  padding: 0.32rem 0.6rem;
+  border-radius: 999px;
+  background: #e9f7ef;
+  border: 1px solid #b8e0c7;
+  color: #1f5c3f;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.emailtrip-hero {
+  padding: 1.5rem 1.35rem;
+}
+
+.emailtrip-hero-meta {
+  margin-top: 0.72rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.emailtrip-hero-meta span {
+  display: inline-flex;
+  padding: 0.3rem 0.52rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(246, 250, 252, 0.9);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.emailtrip-section {
+  padding: 1.05rem 1.25rem;
+}
+
+.emailtrip-summary-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.emailtrip-summary-grid article {
+  border-radius: 12px;
+}
+
+.emailtrip-day-item {
+  padding: 0.75rem 0;
+}
+
+.emailtrip-cta button {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.emailtrip-cta button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(14, 45, 58, 0.25);
+}
+
+.emailtrip-footer {
+  display: grid;
+  gap: 0.22rem;
+}
+
+/* ── Travel Guide (TripDocument) ── */
+.tg-doc {
+  max-width: 980px;
+  padding: 1.6rem;
+  background: #efeadf;
+}
+
+.tg-page {
+  min-height: auto;
+  border-radius: 6px;
+  padding: 3.4rem 3rem;
+  margin-bottom: 1.6rem;
+  justify-content: flex-start;
+  gap: 1.5rem;
+}
+
+.tg-cover-edition {
+  margin: 0;
+  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #7f7466;
+  font-size: 0.68rem;
+}
+
+.tg-chapter-label {
+  margin: 0;
+  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #8b7f6f;
+  font-size: 0.66rem;
+}
+
+.tg-day-estimate {
+  margin: 0.45rem 0 0;
+  color: #74695d;
+  font-style: italic;
+}
+
+.tg-section-header {
+  margin-bottom: 1.7rem;
+}
+
+.tg-day-timeline {
+  gap: 1.1rem;
+}
+
+.tg-day-slot {
+  padding-top: 0.85rem;
+}
+
+.tg-day-slot h3 {
+  font-size: 1.28rem;
+}
+
+.tg-day-bottom-grid article {
+  min-height: 172px;
+}
+
+.tg-restaurant-card,
+.tg-tip-card,
+.tg-packing-grid article {
+  break-inside: avoid;
+}
+
+@media print {
+  .tg-page {
+    min-height: auto;
+    margin: 0;
+    padding: 2.6rem 2.3rem;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .tg-day-slot,
+  .tg-day-bottom-grid,
+  .tg-hotel-card,
+  .tg-restaurant-card,
+  .tg-tip-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+/* ── Responsive breakpoints ── */
+@media (max-width: 960px) {
+  .webtrip-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .webtrip-itinerary-grid[data-count="7"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* At 960px the last card for 7-day becomes full-width */
+  .webtrip-itinerary-grid[data-count="7"] .webtrip-itinerary-card:nth-child(7) {
+    grid-column: 1 / -1;
+  }
+
+  .webtrip-itinerary-grid[data-count="6"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .webtrip-feature-card {
+    grid-template-columns: 1fr;
+  }
+
+  .webtrip-budget-weather-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .webtrip-restaurant-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .webtrip-experience-grid[data-count="6"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .emailtrip-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .webtrip-hero {
+    min-height: 400px;
+    padding: 1.6rem;
+  }
+
+  .webtrip-hero-tags {
+    gap: 0.3rem;
+  }
+
+  .webtrip-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .webtrip-itinerary-grid,
+  .webtrip-itinerary-grid[data-count="3"],
+  .webtrip-itinerary-grid[data-count="4"],
+  .webtrip-itinerary-grid[data-count="5"],
+  .webtrip-itinerary-grid[data-count="6"],
+  .webtrip-itinerary-grid[data-count="7"] {
+    grid-template-columns: 1fr;
+  }
+
+  .webtrip-itinerary-grid[data-count="3"] .webtrip-itinerary-card:nth-child(3),
+  .webtrip-itinerary-grid[data-count="5"] .webtrip-itinerary-card:nth-child(5),
+  .webtrip-itinerary-grid[data-count="7"] .webtrip-itinerary-card:nth-child(7) {
+    grid-column: auto;
+  }
+
+  .webtrip-experience-grid,
+  .webtrip-experience-grid[data-count="3"],
+  .webtrip-experience-grid[data-count="5"],
+  .webtrip-experience-grid[data-count="6"] {
+    grid-template-columns: 1fr;
+  }
+
+  .webtrip-experience-grid[data-count="3"] .webtrip-experience-card:nth-child(3),
+  .webtrip-experience-grid[data-count="5"] .webtrip-experience-card:nth-child(5) {
+    grid-column: auto;
+  }
+
+  .webtrip-restaurant-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .emailtrip-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tg-doc {
+    padding: 0.8rem;
+  }
+
+  .tg-page {
+    padding: 2rem 1.35rem;
+    min-height: auto;
+  }
+}
+
 
 .webtrip-hero-image {
   position: absolute;
@@ -3799,10 +5223,12 @@
 }
 
 .tg-page {
-  min-height: 1180px;
+  min-height: auto;
   border-radius: 6px;
   padding: 3.4rem 3rem;
   margin-bottom: 1.6rem;
+  justify-content: flex-start;
+  gap: 1.5rem;
 }
 
 .tg-cover-edition {

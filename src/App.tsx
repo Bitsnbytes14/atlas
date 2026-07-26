@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ConversationProvider, useConversation } from '@elevenlabs/react'
 import './App.css'
 import { getTripData } from './data'
+import { buildPersonalizedTrip } from './lib/personalization'
+import { LivePreviewCard } from './elements/LivePreviewCard'
 import TripPage from './renderers/page/TripPage'
 import TripEmail from './renderers/email/TripEmail'
 import TripDocument from './renderers/document/TripDocument'
@@ -10,7 +12,7 @@ import { exportTripEmailHtml, exportTripGuidePdf, exportTripWebsiteHtml } from '
 
 const destinationOptions = ['Tokyo', 'Dubai', 'Istanbul'] as const
 const durationOptions = ['3 Days', '5 Days', '7 Days'] as const
-const travelStyleOptions = ['Luxury', 'Adventure', 'Culture', 'Romantic', 'Nature', 'Food', 'Family'] as const
+const travelStyleOptions = ['Adventure', 'Luxury', 'Food', 'Culture', 'Nature', 'Romantic', 'Business'] as const
 const budgetOptions = ['Budget', 'Mid-range', 'Luxury'] as const
 const travelerOptions = ['Solo', 'Couple', 'Friends', 'Family'] as const
 const renderModes = ['Website', 'Email', 'Travel Guide'] as const
@@ -40,6 +42,7 @@ const conciergeAgentId = 'agent_7201ky9sns2jegxtrys4fxhz3kpd'
 
 function AtlasConciergeSection() {
   const conversation = useConversation()
+  const [isOpen, setIsOpen] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [lastSignal, setLastSignal] = useState('Ready to assist with your journey.')
 
@@ -83,59 +86,89 @@ function AtlasConciergeSection() {
   }
 
   return (
-    <section className="atlas-concierge-card" aria-label="Atlas voice concierge">
-      <div className={`atlas-concierge-mic-wrap${isConnected ? ' is-connected' : ''}${conversation.isListening ? ' is-listening' : ''}${conversation.isSpeaking ? ' is-speaking' : ''}`}>
-        <div className="atlas-concierge-ring" aria-hidden="true" />
-        <div className="atlas-concierge-icon" aria-hidden="true">🎙</div>
-        <div className="atlas-concierge-bars" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-          <span />
+    <aside className="atlas-floating-assistant" aria-label="Atlas AI Assistant">
+      {isOpen && (
+        <div className="atlas-assistant-panel" aria-live="polite">
+          <div className="atlas-assistant-header">
+            <div className="atlas-assistant-title-group">
+              <span className="atlas-assistant-sparkle">✨</span>
+              <div>
+                <h4>Atlas AI Concierge</h4>
+                <p className="atlas-assistant-status">
+                  <span className={`atlas-status-dot${isConnected ? ' is-connected' : ''}`} />
+                  {conversation.status}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="atlas-assistant-close"
+              onClick={() => setIsOpen(false)}
+              aria-label="Close assistant panel"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="atlas-assistant-body">
+            <div className={`atlas-concierge-mic-wrap${isConnected ? ' is-connected' : ''}${conversation.isListening ? ' is-listening' : ''}${conversation.isSpeaking ? ' is-speaking' : ''}`}>
+              <div className="atlas-concierge-ring" aria-hidden="true" />
+              <div className="atlas-concierge-icon" aria-hidden="true">🎙</div>
+              <div className="atlas-concierge-bars" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+            </div>
+
+            <p className="atlas-assistant-prompt">
+              Speak naturally to ask about destinations, itineraries, budgets, and travel styles.
+            </p>
+
+            <div className="atlas-assistant-signal">
+              {errorMessage ?? lastSignal}
+            </div>
+
+            <div className="atlas-assistant-meta-grid">
+              <div><span>Listening</span><strong>{conversation.isListening ? 'Yes' : 'No'}</strong></div>
+              <div><span>Speaking</span><strong>{conversation.isSpeaking ? 'Yes' : 'No'}</strong></div>
+            </div>
+          </div>
+
+          <div className="atlas-assistant-footer">
+            <button
+              type="button"
+              className="atlas-concierge-button"
+              onClick={handleStartConversation}
+              disabled={isConnected || conversation.status === 'connecting'}
+            >
+              Start Conversation
+            </button>
+            <button
+              type="button"
+              className="atlas-concierge-button atlas-concierge-button--ghost"
+              onClick={handleEndConversation}
+              disabled={!isConnected && conversation.status !== 'connecting'}
+            >
+              End Session
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="atlas-concierge-content">
-        <p className="atlas-onepage-kicker">Atlas AI Concierge</p>
-        <h2>Talk to Atlas AI Concierge</h2>
-        <p>
-          Need help choosing a destination? Speak naturally and ask about itineraries, travel styles, budgets, and Atlas features.
-        </p>
-
-        <div className="atlas-concierge-status-grid" aria-live="polite">
-          <p><strong>Status:</strong> {conversation.status}</p>
-          <p><strong>Listening:</strong> {conversation.isListening ? 'Yes' : 'No'}</p>
-          <p><strong>Speaking:</strong> {conversation.isSpeaking ? 'Yes' : 'No'}</p>
-        </div>
-
-        <p className="atlas-concierge-signal">{errorMessage ?? lastSignal}</p>
-
-        <ul className="atlas-concierge-features">
-          <li>Destination and season guidance</li>
-          <li>Itinerary and pacing recommendations</li>
-          <li>Budget and style alignment tips</li>
-        </ul>
-      </div>
-
-      <div className="atlas-concierge-actions">
-        <button
-          type="button"
-          className="atlas-concierge-button"
-          onClick={handleStartConversation}
-          disabled={isConnected || conversation.status === 'connecting'}
-        >
-          Start Conversation
-        </button>
-        <button
-          type="button"
-          className="atlas-concierge-button atlas-concierge-button--ghost"
-          onClick={handleEndConversation}
-          disabled={!isConnected && conversation.status !== 'connecting'}
-        >
-          End Conversation
-        </button>
-      </div>
-    </section>
+      {/* Floating Trigger Button */}
+      <button
+        type="button"
+        className={`atlas-assistant-trigger${isOpen ? ' is-active' : ''}${isConnected ? ' is-connected' : ''}`}
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-label="Toggle Atlas AI Concierge"
+      >
+        <span className="atlas-trigger-glow" />
+        <span className="atlas-trigger-icon">🎙</span>
+        <span className="atlas-trigger-label">Atlas AI</span>
+      </button>
+    </aside>
   )
 }
 
@@ -153,6 +186,16 @@ export default function App() {
   const [loadingTipIndex, setLoadingTipIndex] = useState(0)
   const [generatedAt, setGeneratedAt] = useState<Date | null>(null)
   const resultSectionRef = useRef<HTMLElement | null>(null)
+
+  const livePreviewTrip = useMemo(() => {
+    const baseTrip = getTripData(destination, duration)
+    if (!baseTrip) return null
+    return buildPersonalizedTrip(baseTrip, {
+      travelerType: travelers,
+      travelStyle,
+      budget,
+    })
+  }, [destination, duration, travelers, travelStyle, budget])
 
   useEffect(() => {
     if (!isDesigning) {
@@ -190,7 +233,15 @@ export default function App() {
   }, [showResult])
 
   const handleDesignJourney = () => {
-    const trip = getTripData(destination, duration)
+    const baseTrip = getTripData(destination, duration)
+    const trip = baseTrip
+      ? buildPersonalizedTrip(baseTrip, {
+        travelerType: travelers,
+        travelStyle,
+        budget,
+      })
+      : null
+
     setShowResult(false)
     setActiveRenderMode('Website')
     setGeneratedTrip(trip)
@@ -313,64 +364,117 @@ export default function App() {
           <h1 className="atlas-onepage-title">Design Your Next Journey</h1>
           <p className="atlas-onepage-subtitle">One trip. Three beautiful render targets.</p>
 
-          <form
-            className={`atlas-planner-card${isDesigning ? ' is-loading' : ''}`}
-            onSubmit={(event) => {
-              event.preventDefault()
-              handleDesignJourney()
-            }}
-          >
-            <div className="atlas-planner-grid">
-              <label className="atlas-field atlas-field-wide">
-                <span>Destination</span>
-                <select value={destination} onChange={(event) => setDestination(event.target.value as (typeof destinationOptions)[number])}>
-                  {destinationOptions.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </label>
+          <div className="atlas-hero-planner-layout">
+            <form
+              className={`atlas-planner-card${isDesigning ? ' is-loading' : ''}`}
+              onSubmit={(event) => {
+                event.preventDefault()
+                handleDesignJourney()
+              }}
+            >
+              {/* ── Card Header ── */}
+              <div className="atlas-planner-header">
+                <div className="atlas-planner-header-top">
+                  <span className="atlas-planner-compass" aria-hidden="true">🧭</span>
+                  <span className="atlas-planner-label">Plan Your Journey</span>
+                </div>
+                <div className="atlas-planner-divider" aria-hidden="true" />
+              </div>
 
-              <label className="atlas-field">
-                <span>Duration</span>
-                <select value={duration} onChange={(event) => setDuration(event.target.value as (typeof durationOptions)[number])}>
-                  {durationOptions.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </label>
+              {/* ── Form Fields ── */}
+              <div className="atlas-planner-fields">
+                {/* Destination – full width */}
+                <label className="atlas-field atlas-field-wide">
+                  <span><span className="atlas-field-icon">📍</span> Destination</span>
+                  <select value={destination} onChange={(event) => setDestination(event.target.value as (typeof destinationOptions)[number])}>
+                    {destinationOptions.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
 
-              <label className="atlas-field">
-                <span>Travel Style</span>
-                <select value={travelStyle} onChange={(event) => setTravelStyle(event.target.value as (typeof travelStyleOptions)[number])}>
-                  {travelStyleOptions.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </label>
+                {/* Row 2: Duration | Travel Style */}
+                <label className="atlas-field">
+                  <span><span className="atlas-field-icon">📅</span> Duration</span>
+                  <select value={duration} onChange={(event) => setDuration(event.target.value as (typeof durationOptions)[number])}>
+                    {durationOptions.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
 
-              <label className="atlas-field">
-                <span>Budget</span>
-                <select value={budget} onChange={(event) => setBudget(event.target.value as (typeof budgetOptions)[number])}>
-                  {budgetOptions.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </label>
+                <label className="atlas-field">
+                  <span><span className="atlas-field-icon">✨</span> Travel Style</span>
+                  <select value={travelStyle} onChange={(event) => setTravelStyle(event.target.value as (typeof travelStyleOptions)[number])}>
+                    {travelStyleOptions.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
 
-              <label className="atlas-field">
-                <span>Travellers</span>
-                <select value={travelers} onChange={(event) => setTravelers(event.target.value as (typeof travelerOptions)[number])}>
-                  {travelerOptions.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
+                {/* Row 3: Budget | Travellers */}
+                <label className="atlas-field">
+                  <span><span className="atlas-field-icon">💰</span> Budget</span>
+                  <select value={budget} onChange={(event) => setBudget(event.target.value as (typeof budgetOptions)[number])}>
+                    {budgetOptions.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
 
-            <button type="submit" className="atlas-design-button" disabled={isDesigning}>
-              {isDesigning ? 'Designing...' : 'Design My Journey'}
-            </button>
-          </form>
+                <label className="atlas-field">
+                  <span><span className="atlas-field-icon">👥</span> Travellers</span>
+                  <select value={travelers} onChange={(event) => setTravelers(event.target.value as (typeof travelerOptions)[number])}>
+                    {travelerOptions.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              {/* ── Live Selection Summary ── */}
+              <div className="atlas-planner-summary" aria-label="Your current selections">
+                <p className="atlas-planner-summary-label">Your Selections</p>
+                <div className="atlas-planner-chips">
+                  <span className="atlas-tag">📍 {destination}</span>
+                  <span className="atlas-tag">📅 {duration}</span>
+                  <span className="atlas-tag">👥 {travelers}</span>
+                  <span className="atlas-tag">✨ {travelStyle}</span>
+                  <span className="atlas-tag">💰 {budget}</span>
+                </div>
+              </div>
+
+              {/* ── CTA ── */}
+              <div className="atlas-planner-cta-wrap">
+                <button type="submit" className="atlas-design-button" disabled={isDesigning}>
+                  {isDesigning ? (
+                    <>
+                      <span className="atlas-btn-icon">⏳</span>
+                      Designing your journey...
+                    </>
+                  ) : (
+                    <>
+                      <span className="atlas-btn-icon">✦</span>
+                      Design My Journey
+                      <span className="atlas-btn-arrow">→</span>
+                    </>
+                  )}
+                </button>
+                <p className="atlas-planner-footer-note">🔒 No sign up required · Free to create</p>
+              </div>
+            </form>
+
+
+            <LivePreviewCard
+              trip={livePreviewTrip}
+              destinationImage={destinationVisuals[destination]?.image}
+              destination={destination}
+              duration={duration}
+              travelStyle={travelStyle}
+              travelerType={travelers}
+              budget={budget}
+            />
+          </div>
 
           {isDesigning ? (
             <div className="atlas-loading" aria-live="polite">
@@ -385,10 +489,6 @@ export default function App() {
               </div>
             </div>
           ) : null}
-
-          <ConversationProvider agentId={conciergeAgentId}>
-            <AtlasConciergeSection />
-          </ConversationProvider>
         </div>
       </section>
 
@@ -583,6 +683,10 @@ export default function App() {
           )}
         </div>
       </section>
+
+      <ConversationProvider agentId={conciergeAgentId}>
+        <AtlasConciergeSection />
+      </ConversationProvider>
     </main>
   )
 }

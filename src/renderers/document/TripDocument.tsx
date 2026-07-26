@@ -326,9 +326,6 @@ export default function TripDocument({ trip }: TripDocumentProps) {
             {trip.emergencyInfo.embassyContact && <p><strong>Embassy:</strong> {trip.emergencyInfo.embassyContact}</p>}
             {trip.emergencyInfo.medicalNote && <p><strong>Medical Notes:</strong> {trip.emergencyInfo.medicalNote}</p>}
           </div>
-        </section>
-
-        <section className="tg-page tg-page-final">
           <div className="tg-final-inner">
             <p className="tg-kicker">Atlas</p>
             <h2>Thank you for travelling with Atlas</h2>

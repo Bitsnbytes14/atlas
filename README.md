@@ -1,166 +1,197 @@
 # Atlas
 
-Build Once. Render Everywhere.
+> **Build Once. Render Everywhere.**
 
-Atlas is a premium AI-inspired travel planning experience built for the React Elements Challenge. It demonstrates how one structured Trip object can be rendered into multiple polished outputs without duplicating business logic.
+Atlas is a premium AI-inspired travel planning experience created for the **React Elements Challenge**. It demonstrates how a single, strongly-typed `Trip` data model can seamlessly render into three distinct, production-grade output targets — an interactive **Web Application**, a responsive **HTML Email**, and a print-optimized **Travel Guide Document** — without duplicating presentation or business logic.
 
-## Hero
+---
 
-Atlas turns a single travel plan into a multi-format storytelling system. From a cinematic web experience to a shareable email and a printable travel guide, every surface is powered by the same source data.
+## 🌟 Overview
 
-## Overview
+Atlas addresses the challenge of multi-format content distribution in modern travel platforms. Whether a user is exploring itineraries on desktop, reviewing their trip via email on mobile, or printing a physical travel booklet for offline use, Atlas renders the journey with native design aesthetics tailored to each medium.
 
-Atlas is a premium AI-inspired travel planner that showcases React Elements by rendering one Trip object into multiple experiences. The project emphasizes consistency across formats, clean TypeScript data modeling, and modern frontend presentation.
+---
 
-## Features
+## ✨ Features
 
-- Premium Landing Experience
-- Local Dataset Engine
-- AI-inspired Journey Generation
-- Website Renderer
-- Email Renderer
-- Printable Travel Guide
-- ElevenLabs Voice Concierge
-- HTML Export
-- Email Export
-- PDF Export
-- Responsive Design
+- **Dynamic Hero Planner**: Customized journey builder with real-time feedback.
+- **Live Personalization Preview**: Instant visual preview card updating as user selections change.
+- **Personalization Engine**: Rule-based customization layer adjusting stays, activities, dining, tips, and budget allocations.
+- **AI Voice Concierge**: Interactive voice assistant powered by ElevenLabs WebRTC SDK.
+- **Multi-Target Rendering**:
+  - **Website Renderer**: Cinematic, full-screen editorial web guide (`Page`).
+  - **Email Renderer**: Clean, inline-compatible HTML email template (`Email`).
+  - **Travel Guide Renderer**: Structured, chapter-based printable document (`Document`).
+- **One-Click Export**: Native export capabilities for Website HTML, Email HTML, and PDF guides.
+- **Local Dataset Architecture**: Rich, pre-curated datasets for Tokyo, Dubai, and Istanbul.
+- **Adaptive Layouts**: Responsive CSS Grid & Flexbox system tuned for desktop, tablet, and mobile viewports.
 
-## Supported Destinations
+---
 
-Tokyo 🇯🇵
+## 🧠 Personalization Engine
 
-- 3 Days
-- 5 Days
-- 7 Days
+The Atlas Personalization Engine (`src/lib/personalization/`) takes a base destination itinerary and dynamically shapes it based on three user-selected dimensions:
 
-Dubai 🇦🇪
+1. **Traveler Type** (`Solo`, `Couple`, `Friends`, `Family`): Adjusts room types, dining atmospheres, and activity group dynamics.
+2. **Travel Style** (`Adventure`, `Luxury`, `Food`, `Culture`, `Nature`, `Romantic`, `Business`): Filters and injects curated activity highlights and local tips.
+3. **Budget Tier** (`Budget`, `Mid-range`, `Luxury`): Re-calculates total budget, per-night accommodation rates, dining price tiers, and daily spend estimates.
 
-- 3 Days
-- 5 Days
-- 7 Days
+---
 
-Istanbul 🇹🇷
+## 👁️ Live Personalization Preview
 
-- 3 Days
-- 5 Days
-- 7 Days
+Positioned alongside the planner card, the **Live Personalization Preview** (`LivePreviewCard.tsx`) provides instantaneous feedback before journey generation. It reflects the user's selected destination image, compact travel tags, featured stay, dining spotlight, activity teaser, personalized local tip, and estimated total budget in real time.
 
-## Build Once. Render Everywhere.
+---
 
-The same Trip object powers every final output.
+## 🎙️ AI Concierge (ElevenLabs Integration)
+
+Atlas features a floating AI Voice Assistant widget built with `@elevenlabs/react`:
+- **WebRTC Voice Connection**: Low-latency, bidirectional audio streaming.
+- **Real-Time State Indicators**: Visual ring animations reflecting connection, listening, and speaking states.
+- **Concierge Capability**: Answers traveler questions regarding destinations, trip pacing, and local recommendations.
+
+---
+
+## 🎨 Renderers (React Elements)
+
+Powered by `@unlayer/react-elements`:
+
+| Render Target | Component | Container | Description |
+| :--- | :--- | :--- | :--- |
+| **Website** | `TripPage.tsx` | `<Page>` | Cinematic web experience featuring full-bleed hero media, quick facts grid, day-by-day rhythm cards, budget breakdown, and local insights. |
+| **Email** | `TripEmail.tsx` | `<Email>` | Table-safe HTML layout optimized for email clients (Gmail, Outlook, Apple Mail) with CTA buttons and summary cards. |
+| **Travel Guide** | `TripDocument.tsx` | `<Document>` | Multi-chapter editorial document with clean page flow, cover page, stay details, dining guide, packing checklist, and safety contacts. |
+
+---
+
+## 📤 Export Functionality
+
+Atlas provides programmatic client-side export helpers (`src/utils/export.ts`):
+- **Export HTML**: Downloads a standalone HTML webpage of the trip.
+- **Export Email**: Generates production-ready, styled email HTML markup.
+- **Export PDF**: Opens print preview for instant save-to-PDF functionality.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React 18, TypeScript, Vite
+- **Render Engine**: `@unlayer/react-elements`
+- **Voice Agent**: `@elevenlabs/react` SDK
+- **Styling**: Modern Vanilla CSS (Design Tokens, Glassmorphism, CSS Grid & Flexbox)
+
+---
+
+## 📂 Local Dataset Architecture
+
+Atlas includes rich local dataset models (`src/data/`) supporting 3, 5, and 7-day itineraries for:
+- 🇯🇵 **Tokyo, Japan**
+- 🇦🇪 **Dubai, United Arab Emirates**
+- 🇹🇷 **Istanbul, Turkey**
+
+Each dataset strictly adheres to the `Trip` schema (`src/types/trip.ts`), providing complete destination overviews, weather snapshots, lodging, dining, transport legs, packing checklists, local tips, and emergency contacts.
+
+---
+
+## 📁 Project Structure
 
 ```text
-Trip Object
-   |
-   v
-Website
-   |
-   v
-Email
-   |
-   v
-Travel Guide
+aitravel/
+├── public/                     # Static assets & screenshots
+├── server/                     # Optional backend services
+├── src/
+│   ├── assets/                 # SVGs and static media
+│   ├── context/                # React context providers
+│   ├── data/                   # Tokyo, Dubai & Istanbul datasets
+│   ├── elements/               # LivePreviewCard & UI elements
+│   ├── hooks/                  # Custom React hooks
+│   ├── lib/
+│   │   └── personalization/    # Personalization engine rules
+│   ├── pages/                  # Page components & Dashboard
+│   ├── renderers/
+│   │   ├── document/           # Travel Guide Document renderer
+│   │   ├── email/              # Email renderer
+│   │   └── page/               # Website Page renderer
+│   ├── services/               # API & voice service handlers
+│   ├── types/                  # TypeScript definitions (Trip, etc.)
+│   ├── utils/                  # Export utilities (HTML, PDF, Email)
+│   ├── App.tsx                 # Main application landing & engine
+│   ├── App.css                 # Core CSS design system
+│   └── main.tsx                # Application entry point
+├── index.html
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
 ```
 
-## Voice Concierge
+---
 
-Atlas includes an ElevenLabs-powered Voice Concierge experience:
+## 🚀 Setup & Installation
 
-- Real-time voice conversation
-- WebRTC session connectivity
-- Premium Atlas concierge interaction flow
+### Prerequisites
+- Node.js (v18+ recommended)
+- npm or yarn
 
-## Export Features
+### Steps
 
-Atlas supports one-click export workflows from generated trip data:
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Bitsnbytes14/atlas.git
+   cd atlas
+   ```
 
-- Export HTML
-- Export Email
-- Export PDF
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-## Tech Stack
+3. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:5173` in your browser.
 
-- React
-- TypeScript
-- Vite
-- React Elements
-- ElevenLabs React SDK
-- CSS
+4. **Build for Production**:
+   ```bash
+   npm run build
+   ```
 
-## Project Structure
+---
 
-```text
-.
-|-- public/
-|-- server/
-|   |-- src/
-|   |   |-- mappers/
-|   |   |-- prompts/
-|   |   |-- routes/
-|   |   |-- services/
-|   |   `-- types/
-|   `-- tsconfig.json
-|-- src/
-|   |-- context/
-|   |-- data/
-|   |   |-- dubai/
-|   |   |-- istanbul/
-|   |   `-- tokyo/
-|   |-- pages/
-|   |-- renderers/
-|   |   |-- document/
-|   |   |-- email/
-|   |   `-- page/
-|   |-- services/
-|   |-- types/
-|   `-- utils/
-|-- index.html
-|-- package.json
-`-- README.md
-```
+## 🖼️ Screenshots
 
-## Installation
-
-```bash
-npm install
-npm run dev
-npm run build
-```
-
-## Future Scope
-
-- More destinations
-- Live booking APIs
-- Maps integration
-- Weather APIs
-- User accounts
-- Saved trips
-
-## Screenshots
-
-### Landing Page
-
+### Landing Page & Live Preview
 ![Landing Page Placeholder](./public/screenshots/landing-page-placeholder.png)
 
-### Website Renderer
-
+### Website Renderer Target
 ![Website Renderer Placeholder](./public/screenshots/website-renderer-placeholder.png)
 
-### Email Renderer
-
+### Email Renderer Target
 ![Email Renderer Placeholder](./public/screenshots/email-renderer-placeholder.png)
 
-### Travel Guide
-
+### Travel Guide Document Target
 ![Travel Guide Placeholder](./public/screenshots/travel-guide-placeholder.png)
 
-### Voice Concierge
-
+### AI Voice Concierge Widget
 ![Voice Concierge Placeholder](./public/screenshots/voice-concierge-placeholder.png)
 
-## Author
+---
 
-Mohammad Ahmad  
-Symbiosis Institute of Technology  
-Built for the React Elements Challenge.
+## 🔮 Future Improvements
+
+- Additional global destination datasets (Paris, London, New York).
+- Live weather forecast API integration.
+- Dynamic flight & hotel booking partner link generators.
+- Interactive map rendering for daily activity pins.
+- User account authentication & trip bookmarking.
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+**Built with ❤️ for the React Elements Challenge**

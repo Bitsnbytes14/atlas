@@ -14,14 +14,19 @@ function destinationHero(destination: string): string {
   return map[destination] ?? 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1800&q=80'
 }
 
+function cleanTitle(title: string | undefined): string {
+  if (!title) return 'Planned experience'
+  return title.replace(/^(Morning|Afternoon|Evening):\s*/i, '')
+}
+
 export default function TripPage({ trip }: TripPageProps) {
   const durationLabel = `${trip.overview.durationDays} days`
   const budgetLabel = `${trip.budget.currency} ${trip.budget.totalBudget.toLocaleString()}`
   const bestSeasonLabel = trip.destination.bestSeason.join(' • ')
   const travelerLabel = `1 traveler · ${trip.traveler.name}`
-  const itineraryDays = trip.itinerary.slice(0, 6)
+  const itineraryDays = trip.itinerary.slice(0, trip.overview.durationDays)
   const featuredRestaurants = trip.restaurants.slice(0, 3)
-  const localExperiences = trip.localTips.slice(0, 4)
+  const localExperiences = trip.localTips.slice(0, 6)
   const packingHighlights = trip.packingList.filter((item) => item.required).slice(0, 5)
   const weatherPreview = trip.weather.slice(0, 3)
   const dailyEstimate = Math.round(trip.budget.estimatedSpend / Math.max(trip.overview.durationDays, 1))
@@ -73,22 +78,20 @@ export default function TripPage({ trip }: TripPageProps) {
             <p className="webtrip-section-kicker">Daily Itinerary</p>
             <h2>Day-by-day rhythm</h2>
           </div>
-          <div className="webtrip-itinerary-grid">
+          <div
+            className="webtrip-itinerary-grid"
+            data-count={itineraryDays.length}
+          >
             {itineraryDays.map((day) => (
               <article className="webtrip-itinerary-card" key={day.id}>
                 <p className="webtrip-itinerary-day">Day {day.dayNumber}</p>
                 <h3>{day.title}</h3>
                 <p>{day.summary}</p>
                 <div className="webtrip-itinerary-meta">
-                  <span>Morning: {day.activities[0]?.title ?? 'Planned experience'}</span>
-                  <span>Afternoon: {day.activities[1]?.title ?? 'Planned experience'}</span>
-                  <span>Evening: {day.activities[2]?.title ?? 'Planned experience'}</span>
+                  {day.activities[0] && <span><strong>Morning:</strong> {cleanTitle(day.activities[0].title)}</span>}
+                  {day.activities[1] && <span><strong>Afternoon:</strong> {cleanTitle(day.activities[1].title)}</span>}
+                  {day.activities[2] && <span><strong>Evening:</strong> {cleanTitle(day.activities[2].title)}</span>}
                 </div>
-                <ul>
-                  {day.activities.slice(0, 3).map((activity) => (
-                    <li key={activity.id}>{activity.title}</li>
-                  ))}
-                </ul>
               </article>
             ))}
           </div>
@@ -166,7 +169,10 @@ export default function TripPage({ trip }: TripPageProps) {
             <p className="webtrip-section-kicker">Local Experiences</p>
             <h2>Culture and practical insights</h2>
           </div>
-          <div className="webtrip-experience-grid">
+          <div
+            className="webtrip-experience-grid"
+            data-count={localExperiences.length}
+          >
             {localExperiences.map((tip) => (
               <article key={tip.id} className="webtrip-experience-card">
                 <h3>{tip.title}</h3>
