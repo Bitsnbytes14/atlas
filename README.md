@@ -6,6 +6,35 @@ Atlas is a premium AI-inspired travel planning experience created for the **Reac
 
 ---
 
+
+## 🏗️ Architecture
+
+Atlas follows a **Build Once. Render Everywhere.** architecture where a single AI-generated `Trip` object powers every user experience without duplicating rendering logic.
+
+```text
+                    User Journey
+                         │
+                         ▼
+                Hero Planner + Personalization
+                         │
+                         ▼
+                 AI Trip Generation Engine
+                         │
+                         ▼
+                Shared Trip Data Model
+                         │
+        ┌────────────────┼────────────────┐
+        │                │                │
+        ▼                ▼                ▼
+   Website Renderer   Email Renderer   Travel Guide
+      <Page>            <Email>         <Document>
+        │                │                │
+        ▼                ▼                ▼
+ Interactive Guide   Responsive Email   Printable Book
+```
+
+This architecture ensures that every output stays synchronized because all renderers consume the same strongly-typed `Trip` object.
+
 ## 🌟 Overview
 
 Atlas addresses the challenge of multi-format content distribution in modern travel platforms. Whether a user is exploring itineraries on desktop, reviewing their trip via email on mobile, or printing a physical travel booklet for offline use, Atlas renders the journey with native design aesthetics tailored to each medium.
